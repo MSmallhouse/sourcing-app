@@ -1,3 +1,15 @@
+/*
+ * DeleteLeadButton Component
+ *
+ * This component handles the deletion of an individual lead.
+ * When the user clicks the "Delete" button, it removes the lead from Supabase
+ * and then calls the /api/delete-event endpoint to delete the corresponding
+ * Google Calendar event associated with that lead.
+ *
+ * The component relies on Supabase's real-time subscriptions to update the UI,
+ * ensuring that deletion is reflected across all clients.
+ */
+
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';

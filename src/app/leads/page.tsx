@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from './types';
-import { DeleteLeadButton } from './DeleteLeadButton';
-import { EditLeadButton } from './EditLeadButton';
+import { EditableLead } from './EditableLead';
 
 const { data: { session } } = await supabase.auth.getSession();
 
@@ -17,8 +16,6 @@ export default function LeadsPage() {
   const [pickupTime, setPickupTime] = useState('');
   const [loading, setLoading] = useState(true);
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<Partial<Lead>>({});
 
   // Fetch user ID from session
   useEffect(() => {
@@ -168,24 +165,6 @@ export default function LeadsPage() {
     setPickupTime('');
   };
 
-  const handleEditSave = async (id: string) => {
-    const { error } = await supabase
-      .from('leads')
-      .update({
-        title: editValues.title,
-        purchase_price: editValues.purchase_price,
-        notes: editValues.notes,
-      })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error updating lead:', error);
-    } else {
-      setEditingId(null);
-      setEditValues({});
-    }
-  };
-
   return (
     <div className="p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">Submit a Lead</h1>
@@ -246,83 +225,7 @@ export default function LeadsPage() {
       ) : (
         <ul className="space-y-2">
           {leads.map((lead) => (
-            <li
-              key={lead.id}
-              className="border p-2 rounded flex flex-col space-y-1"
-            >
-              {editingId === lead.id ? (
-                <>
-                  <input
-                    className="border p-1"
-                    value={editValues.title ?? lead.title}
-                    onChange={(e) =>
-                      setEditValues((prev) => ({
-                        ...prev,
-                        title: e.target.value,
-                      }))
-                    }
-                  />
-                  <input
-                    className="border p-1"
-                    type="number"
-                    value={editValues.purchase_price ?? lead.purchase_price}
-                    onChange={(e) =>
-                      setEditValues((prev) => ({
-                        ...prev,
-                        purchase_price: parseFloat(e.target.value),
-                      }))
-                    }
-                  />
-                  <textarea
-                    className="border p-1"
-                    value={editValues.notes ?? lead.notes}
-                    onChange={(e) =>
-                      setEditValues((prev) => ({
-                        ...prev,
-                        notes: e.target.value,
-                      }))
-                    }
-                  />
-                  <div className="flex space-x-2 mt-2">
-                    <EditLeadButton
-                      lead={lead}
-                      editValues={editValues}
-                      onEditComplete={() => {
-                        setEditingId(null);
-                        setEditValues({});
-                      }}
-                    />
-                    <button
-                      className="bg-gray-300 px-2 py-1 rounded"
-                      onClick={() => setEditingId(null)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span className="font-semibold">{lead.title}</span>
-                  <span>Price: ${lead.purchase_price}</span>
-                  <span>Notes: {lead.notes}</span>
-                  <span className="text-gray-500 text-sm">
-                    {new Date(lead.created_at).toLocaleString()}
-                  </span>
-                  <div className="flex space-x-2 mt-2">
-                    <DeleteLeadButton lead={lead} />
-                    <button
-                      className="bg-yellow-500 text-white px-2 py-1 rounded"
-                      onClick={() => {
-                        setEditingId(lead.id);
-                        setEditValues(lead);
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
+            <EditableLead key={lead.id} lead={lead} />
           ))}
         </ul>
       )}
