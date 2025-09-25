@@ -3,12 +3,37 @@
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from './types';
 
-export function DeleteLeadButton({ lead }: { lead: Lead }) {
+type DeleteLeadButtonProps = {
+  lead: Lead;
+};
+
+export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
   const handleDelete = async () => {
-    const { error } = await supabase.from('leads').delete().eq('id', lead.id);
+    // Delete the lead from the database
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', lead.id);
 
     if (error) {
       console.error('Error deleting lead:', error);
+      return;
+    }
+
+    // Delete the corresponding Google Calendar event
+    try {
+      const res = await fetch('/api/delete-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        console.error('Error deleting calendar event:', result.error);
+      }
+    } catch (err) {
+      console.error('Error calling delete-event API:', err);
     }
   };
 

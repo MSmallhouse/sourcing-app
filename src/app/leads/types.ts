@@ -6,5 +6,6 @@ export interface Lead {
   purchase_price: number;
   notes: string;
   created_at: string;
-  pickup_time?: string;
+  pickup_time: string;
+  calendar_event_id: string | null;
 }

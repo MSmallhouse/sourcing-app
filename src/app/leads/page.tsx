@@ -1,14 +1,10 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { createCalendarEvent } from "@/lib/googleCalendar";
-import { EditLeadButton } from './EditLeadButton';
 import type { Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
 
-// Replace with actual current user's ID (from auth/session)
-//const userId = '242bb1d5-0559-4d19-b822-0d71f42f9841';
 const { data: { session } } = await supabase.auth.getSession();
 
 export default function LeadsPage() {
@@ -17,12 +13,13 @@ export default function LeadsPage() {
   const [purchasePrice, setPurchasePrice] = useState('');
   const [notes, setNotes] = useState('');
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [pickupTime, setPickupTime] = useState("");
+  const [pickupTime, setPickupTime] = useState('');
   const [loading, setLoading] = useState(true);
+  const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null); // track lead being edited
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
 
-  
+  // Fetch user ID from session
   useEffect(() => {
     if (session?.user) {
       setUserId(session.user.id);
@@ -31,7 +28,6 @@ export default function LeadsPage() {
 
   // Fetch initial leads
   useEffect(() => {
-    // Only fetch leads once userId is available
     if (!userId) return;
 
     const fetchLeads = async () => {
@@ -56,96 +52,120 @@ export default function LeadsPage() {
     if (!userId) return;
 
     const channel = supabase
-    .channel('schema-db-changes')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public' },
-      (payload) => {
-        const newLead = payload.new as Lead;
-        // Only handle leads for this user
-        if (newLead?.sourcer_id !== userId) return;
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leads' },
+        (payload) => {
+          const newLead = payload.new as Lead;
+          const oldLead = payload.old as Lead;
 
-        setLeads((prev) => {
-          switch (payload.eventType) {
-            case 'INSERT':
-              if (prev.find((l) => l.id === newLead.id)) return prev;
-              return [newLead, ...prev];
-            case 'UPDATE':
-              return prev.map((l) => (l.id === newLead.id ? newLead : l));
-            case 'DELETE':
-              return prev.filter((l) => l.id !== (payload.old as Lead).id);
-            default:
-              return prev;
-          }
-        });
-      }
-    )
-    .subscribe()
+          setLeads((prev) => {
+            switch (payload.eventType) {
+              case 'INSERT':
+                if (prev.find((l) => l.id === newLead.id)) return prev;
+                return [newLead, ...prev];
+              case 'UPDATE':
+                return prev.map((l) => (l.id === newLead.id ? newLead : l));
+              case 'DELETE':
+                return prev.filter((l) => l.id !== oldLead.id);
+              default:
+                return prev;
+            }
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
-      // Cleanup; ignore returned Promise for TS
+      // Cleanup subscription
       void channel.unsubscribe();
     };
   }, [userId]);
 
-
-  // Generate slots 9–5 (for today only, can refine later)
-  const generateTimeSlots = () => {
-    const slots: string[] = [];
-    const base = new Date();
-    base.setMinutes(0, 0, 0); // clear minutes
-    for (let hour = 9; hour < 17; hour++) {
-      const start = new Date(base);
-      start.setHours(hour);
-      const end = new Date(base);
-      end.setHours(hour + 1);
-      slots.push(`${start.toISOString()}|${end.toISOString()}`);
+  // Fetch available slots from Google Calendar with periodic polling
+  useEffect(() => {
+    async function fetchSlots() {
+      try {
+        const res = await fetch('/api/available-slots');
+        const slots = await res.json();
+        setAvailableSlots(slots);
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+      }
     }
-    return slots;
-  };
+
+    // Initial fetch
+    fetchSlots();
+
+    // Set up periodic polling every 1 minute
+    const interval = setInterval(() => {
+      fetchSlots();
+    }, 60 * 1000); // 1 minute
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickupTime || !userId) return;
   
-    const [startISO, endISO] = pickupTime.split("|");
+    const [startISO, endISO] = pickupTime.split('|');
   
-    // Insert into Supabase
+    // Create a Google Calendar event
+    let calendarEventId: string | null = null;
+    try {
+      const res = await fetch('/api/create-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, notes, startISO, endISO }),
+      });
+  
+      const result = await res.json();
+      if (result.success) {
+        calendarEventId = result.eventId; // Store the calendar event ID
+      } else {
+        console.error('Error creating calendar event:', result.error);
+      }
+    } catch (err) {
+      console.error('Error calling create-event API:', err);
+    }
+  
+    // Insert the lead into Supabase
     const { data, error } = await supabase
-      .from("leads")
+      .from('leads')
       .insert({
         sourcer_id: userId,
         title,
         purchase_price: parseFloat(purchasePrice),
         notes,
         pickup_time: startISO,
+        calendar_event_id: calendarEventId, // Save the calendar event ID
       })
       .select()
       .single();
   
     if (error) {
-      console.error("Error inserting lead:", error);
+      console.error('Error inserting lead:', error);
       return;
     }
-  
-    // Call API route to create calendar event
-    const res = await fetch("/api/create-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, notes, startISO, endISO }),
-    });
-  
-    const result = await res.json();
-    if (!result.success) {
-      console.error("Error creating calendar event:", result.error);
+
+    // Fetch updated available slots
+    try {
+      const slotsRes = await fetch('/api/available-slots'); // <--- This is where the API is called
+      const slots = await slotsRes.json();
+      setAvailableSlots(slots);
+    } catch (fetchError) {
+      console.error('Error fetching updated available slots:', fetchError);
     }
   
-    setTitle("");
-    setPurchasePrice("");
-    setNotes("");
-    setPickupTime("");
+    setTitle('');
+    setPurchasePrice('');
+    setNotes('');
+    setPickupTime('');
   };
 
-  // Save edit
   const handleEditSave = async (id: string) => {
     const { error } = await supabase
       .from('leads')
@@ -196,14 +216,14 @@ export default function LeadsPage() {
           required
         >
           <option value="">Select pickup time</option>
-          {generateTimeSlots().map((slot, idx) => {
-            const [startISO, endISO] = slot.split("|");
-            const start = new Date(startISO);
-            const end = new Date(endISO);
+          {availableSlots.map((slot, idx) => {
+            const start = new Date(slot.start);
+            const end = new Date(slot.end);
+            const day = start.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+            const time = `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
             return (
-              <option key={idx} value={slot}>
-                {start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}{" "}
-                – {end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              <option key={idx} value={`${slot.start}|${slot.end}`}>
+                {day}, {time}
               </option>
             );
           })}
@@ -284,8 +304,6 @@ export default function LeadsPage() {
                   <span className="text-gray-500 text-sm">
                     {new Date(lead.created_at).toLocaleString()}
                   </span>
-
-                  {/* Action buttons */}
                   <div className="flex space-x-2 mt-2">
                     <DeleteLeadButton lead={lead} />
                     <button
@@ -306,5 +324,4 @@ export default function LeadsPage() {
       )}
     </div>
   );
-
 }

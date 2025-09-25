@@ -3,10 +3,10 @@ import { google } from 'googleapis';
 
 export async function POST(req: Request) {
   try {
-    const { title, notes, startISO, endISO } = await req.json();
+    const { calendarEventId } = await req.json();
 
-    if (!title || !startISO || !endISO) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' });
+    if (!calendarEventId) {
+      return NextResponse.json({ success: false, error: 'Missing calendarEventId' });
     }
 
     const auth = new google.auth.JWT({
@@ -17,22 +17,17 @@ export async function POST(req: Request) {
 
     const calendar = google.calendar('v3');
 
-    // Create the event in Google Calendar
-    const event = await calendar.events.insert({
+    // Delete the event from Google Calendar
+    await calendar.events.delete({
       auth,
       calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
-      requestBody: {
-        summary: title,
-        description: notes,
-        start: { dateTime: startISO },
-        end: { dateTime: endISO },
-      },
+      eventId: calendarEventId,
     });
 
-    return NextResponse.json({ success: true, eventId: event.data.id });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error(
-      'Error creating calendar event:',
+      'Error deleting calendar event:',
       error instanceof Error ? error.message : String(error)
     );
     return NextResponse.json({
