@@ -4,77 +4,68 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from './types';
 
-export function EditLeadButton({ lead }: { lead: Lead }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState(lead.title);
-  const [price, setPrice] = useState(lead.purchase_price.toString());
-  const [notes, setNotes] = useState(lead.notes ?? '');
+type EditLeadButtonProps = {
+  lead: Lead;
+  // The edited values that the user has entered
+  editValues: Partial<Lead>;
+  // Callback to signal that editing is complete (e.g. to exit edit mode)
+  onEditComplete: () => void;
+};
 
-  const handleUpdate = async () => {
+export function EditLeadButton({ lead, editValues, onEditComplete }: EditLeadButtonProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+
+    // Update the lead in Supabase
     const { error } = await supabase
       .from('leads')
       .update({
-        title,
-        purchase_price: parseFloat(price),
-        notes,
+        title: editValues.title,
+        purchase_price: editValues.purchase_price,
+        notes: editValues.notes,
       })
       .eq('id', lead.id);
 
     if (error) {
       console.error('Error updating lead:', error);
-    } else {
-      setIsOpen(false); // close modal on success
+      setLoading(false);
+      return;
     }
+
+    // If the lead has an associated Google Calendar event, update that as well
+    if (lead.calendar_event_id) {
+      try {
+        const res = await fetch('/api/edit-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            calendarEventId: lead.calendar_event_id,
+            title: editValues.title,
+            notes: editValues.notes,
+          }),
+        });
+        const result = await res.json();
+        if (!result.success) {
+          console.error('Error updating calendar event:', result.error);
+        }
+      } catch (err) {
+        console.error('Error calling edit-event API:', err);
+      }
+    }
+
+    setLoading(false);
+    onEditComplete();
   };
 
   return (
-    <>
-      <button
-        className="text-blue-500 hover:underline"
-        onClick={() => setIsOpen(true)}
-      >
-        Edit
-      </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">Edit Lead</h2>
-            <div className="space-y-3">
-              <input
-                className="border p-2 w-full"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <input
-                className="border p-2 w-full"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-              <textarea
-                className="border p-2 w-full"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-1 rounded border"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdate}
-                className="bg-blue-500 text-white px-3 py-1 rounded"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <button
+      onClick={handleSave}
+      disabled={loading}
+      className="bg-green-500 text-white px-2 py-1 rounded"
+    >
+      {loading ? 'Saving...' : 'Save'}
+    </button>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
+import { EditLeadButton } from './EditLeadButton';
 
 const { data: { session } } = await supabase.auth.getSession();
 
@@ -16,7 +17,7 @@ export default function LeadsPage() {
   const [pickupTime, setPickupTime] = useState('');
   const [loading, setLoading] = useState(true);
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null); // track lead being edited
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
 
   // Fetch user ID from session
@@ -153,13 +154,14 @@ export default function LeadsPage() {
 
     // Fetch updated available slots
     try {
-      const slotsRes = await fetch('/api/available-slots'); // <--- This is where the API is called
+      const slotsRes = await fetch('/api/available-slots');
       const slots = await slotsRes.json();
       setAvailableSlots(slots);
     } catch (fetchError) {
       console.error('Error fetching updated available slots:', fetchError);
     }
   
+    // Clear the form fields
     setTitle('');
     setPurchasePrice('');
     setNotes('');
@@ -282,12 +284,14 @@ export default function LeadsPage() {
                     }
                   />
                   <div className="flex space-x-2 mt-2">
-                    <button
-                      className="bg-green-500 text-white px-2 py-1 rounded"
-                      onClick={() => handleEditSave(lead.id)}
-                    >
-                      Save
-                    </button>
+                    <EditLeadButton
+                      lead={lead}
+                      editValues={editValues}
+                      onEditComplete={() => {
+                        setEditingId(null);
+                        setEditValues({});
+                      }}
+                    />
                     <button
                       className="bg-gray-300 px-2 py-1 rounded"
                       onClick={() => setEditingId(null)}
