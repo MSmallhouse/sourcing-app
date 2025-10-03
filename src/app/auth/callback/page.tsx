@@ -11,7 +11,7 @@ export default function AuthCallback() {
     // This will complete the login and persist the session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        router.replace('/debug') // or dashboard later
+        router.replace('/dashboard')
       } else {
         router.replace('/login')
       }
