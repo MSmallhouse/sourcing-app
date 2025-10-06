@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import useCurrentUser from '@/hooks/useCurrentUser';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 export default function SubmitLeadPage() {
   const [title, setTitle] = useState('');
@@ -11,7 +11,7 @@ export default function SubmitLeadPage() {
   const [pickupTime, setPickupTime] = useState('');
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
 
-  const { userId, session } = useCurrentUser();
+  const { userId } = useCurrentUser();
 
   // Fetch available slots from Google Calendar with periodic polling
   useEffect(() => {
@@ -72,6 +72,7 @@ export default function SubmitLeadPage() {
         notes,
         pickup_time: startISO,
         calendar_event_id: calendarEventId, // Save the calendar event ID
+        status: 'submitted',
       })
       .select()
       .single();
