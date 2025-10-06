@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function useCurrentUser() {
+export function useCurrentUser() {
   const [session, setSession] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
