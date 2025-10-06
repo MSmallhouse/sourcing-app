@@ -16,14 +16,15 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import type { Lead } from './types';
+import { type Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
 
 type EditableLeadProps = {
   lead: Lead;
+  isAdmin: boolean;
 };
 
-export function EditableLead({ lead }: EditableLeadProps) {
+export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
 
@@ -72,6 +73,21 @@ export function EditableLead({ lead }: EditableLeadProps) {
     setIsEditing(false);
     setEditValues({});
   };
+
+  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // Update the lead in Supabase
+    const { error } = await supabase
+      .from('leads')
+      .update({
+        status: e.target.value,
+      })
+      .eq('id', lead.id);
+
+    if (error) {
+      console.error('Error updating lead:', error);
+      return;
+    }
+  }
 
   return (
     <li className="border p-2 rounded flex flex-col space-y-1">
@@ -136,6 +152,20 @@ export function EditableLead({ lead }: EditableLeadProps) {
             >
               Edit
             </button>
+            {isAdmin && (
+              <>
+                <label>Status:</label>
+                <select
+                  value={lead.status}
+                  onChange={handleStatusChange}>
+                  <option value="submitted">Submitted</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="picked up">Picked Up</option>
+                  <option value="sold">Sold</option>
+                </select>
+              </>
+            )}
           </div>
         </>
       )}
