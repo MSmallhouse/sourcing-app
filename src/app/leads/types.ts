@@ -8,7 +8,8 @@ export interface Lead {
   purchase_price: number;
   notes: string;
   created_at: string;
-  pickup_time: string;
+  pickup_start: string;
+  pickup_end: string;
   calendar_event_id: string | null;
   status: LeadStatus;
 }

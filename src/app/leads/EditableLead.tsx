@@ -16,8 +16,10 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { type Lead } from './types';
+import { LeadStatus, type Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
+
+const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
 
 type EditableLeadProps = {
   lead: Lead;
@@ -75,6 +77,10 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   };
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStatus = e.target.value as LeadStatus;
+    const wasOnCalendar = ON_CALENDAR_STATUSES.includes(lead.status);
+    const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
+
     // Update the lead in Supabase
     const { error } = await supabase
       .from('leads')
@@ -86,6 +92,41 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     if (error) {
       console.error('Error updating lead:', error);
       return;
+    }
+
+    if (!wasOnCalendar && willBeOnCalendar) {
+      // Create calendar event
+      const res = await fetch('/api/create-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: lead.title,
+          notes: lead.notes,
+          startISO: lead.pickup_start,
+          endISO: lead.pickup_end,
+        }),
+      });
+      const result = await res.json();
+      if (result.success && result.eventId) {
+        // Save the calendar event ID to the lead
+        await supabase
+          .from('leads')
+          .update({ calendar_event_id: result.eventId })
+          .eq('id', lead.id);
+      }
+
+    } else if (wasOnCalendar && !willBeOnCalendar) {
+      // Delete calendar event
+      await fetch('/api/delete-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
+      });
+      // Remove the calendar_event_id from the lead
+      await supabase
+        .from('leads')
+        .update({ calendar_event_id: null })
+        .eq('id', lead.id);
     }
   }
 

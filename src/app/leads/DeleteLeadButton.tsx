@@ -32,6 +32,9 @@ export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
       return;
     }
 
+    // Only attempt to delete the calendar event if it exists on the calendar
+    if (!lead.calendar_event_id) return;
+
     // Delete the corresponding Google Calendar event
     try {
       const res = await fetch('/api/delete-event', {

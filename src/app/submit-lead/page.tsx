@@ -43,25 +43,6 @@ export default function SubmitLeadPage() {
   
     const [startISO, endISO] = pickupTime.split('|');
   
-    // Create a Google Calendar event
-    let calendarEventId: string | null = null;
-    try {
-      const res = await fetch('/api/create-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, notes, startISO, endISO }),
-      });
-  
-      const result = await res.json();
-      if (result.success) {
-        calendarEventId = result.eventId; // Store the calendar event ID
-      } else {
-        console.error('Error creating calendar event:', result.error);
-      }
-    } catch (err) {
-      console.error('Error calling create-event API:', err);
-    }
-  
     // Insert the lead into Supabase
     const { data, error } = await supabase
       .from('leads')
@@ -70,8 +51,8 @@ export default function SubmitLeadPage() {
         title,
         purchase_price: parseFloat(purchasePrice),
         notes,
-        pickup_time: startISO,
-        calendar_event_id: calendarEventId, // Save the calendar event ID
+        pickup_start: startISO,
+        pickup_end: endISO,
         status: 'submitted',
       })
       .select()
