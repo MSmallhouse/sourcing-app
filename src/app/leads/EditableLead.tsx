@@ -29,6 +29,9 @@ type EditableLeadProps = {
 export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
+  const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
+  const [saleDate, setSaleDate] = useState<string>(lead.sale_date || '');
+  const [salePrice, setSalePrice] = useState<string>(lead.sale_price?.toString() || '');
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -81,12 +84,23 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     const wasOnCalendar = ON_CALENDAR_STATUSES.includes(lead.status);
     const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
 
+    if (newStatus === 'sold') {
+      setPendingStatus('sold');
+      setIsEditing(false); // Exit edit mode if open
+      return;
+    }
+
+    // If changing from sold to any other status, clear sale info
+    const updateData: any = { status: newStatus };
+    if (lead.status === 'sold') {
+      updateData.sale_date = null;
+      updateData.sale_price = null;
+    }
+
     // Update the lead in Supabase
     const { error } = await supabase
       .from('leads')
-      .update({
-        status: e.target.value,
-      })
+      .update(updateData)
       .eq('id', lead.id);
 
     if (error) {
@@ -130,9 +144,69 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     }
   }
 
+  const handleConfirmSold = async () => {
+    if (!saleDate || !salePrice) {
+      alert('Please enter both sale date and sale price.');
+      return;
+    }
+
+    // Update lead in Supabase
+    const { error } = await supabase
+      .from('leads')
+      .update({
+        status: 'sold',
+        sale_date: saleDate,
+        sale_price: parseFloat(salePrice),
+      })
+      .eq('id', lead.id);
+
+    if (error) {
+      console.error('Error updating lead:', error);
+      return;
+    }
+    setPendingStatus(null);
+  }
+
   return (
     <li className="border p-2 rounded flex flex-col space-y-1">
-      {isEditing ? (
+      {pendingStatus === 'sold' ? (
+        <div className="flex flex-col space-y-2">
+          <label>
+            Sale Date:
+            <input
+              type="date"
+              className="border p-1 ml-2"
+              value={saleDate}
+              onChange={(e) => setSaleDate(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Sale Price:
+            <input
+              type="number"
+              className="border p-1 ml-2"
+              value={salePrice}
+              onChange={(e) => setSalePrice(e.target.value)}
+              required
+            />
+          </label>
+          <div className="flex space-x-2 mt-2">
+            <button
+              className="bg-green-500 text-white px-2 py-1 rounded"
+              onClick={handleConfirmSold}
+            >
+              Confirm Sold
+            </button>
+            <button
+              className="bg-gray-300 px-2 py-1 rounded"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : isEditing ? (
         <>
           <input
             className="border p-1"
@@ -182,6 +256,13 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
           <span className="text-gray-500 text-sm">
             {new Date(lead.created_at).toLocaleString()}
           </span>
+          {/* Show sale info if sold */}
+          {lead.status === 'sold' && (
+            <div className="text-green-700 text-sm mt-1">
+              <div>Sold on: {lead.sale_date ? new Date(lead.sale_date).toLocaleDateString() : 'N/A'}</div>
+              <div>Sale Price: {lead.sale_price ? `$${lead.sale_price}` : 'N/A'}</div>
+            </div>
+          )}
           <div className="flex space-x-2 mt-2">
             <DeleteLeadButton lead={lead} />
             <button

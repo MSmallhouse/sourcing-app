@@ -12,4 +12,6 @@ export interface Lead {
   pickup_end: string;
   calendar_event_id: string | null;
   status: LeadStatus;
+  sale_date?: string | null;
+  sale_price?: number | null;
 }
