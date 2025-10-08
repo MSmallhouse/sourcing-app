@@ -3,6 +3,7 @@ import { EditableLead } from '@/app/leads/EditableLead';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
 import type { LeadStatus } from '@/app/leads/types'
+import Link from 'next/link';
 
 const STATUSES: LeadStatus[] = [
   'submitted',
@@ -31,7 +32,7 @@ export default function dashboardPage() {
             filterLeadsByStatus(status).length === 0 ? ( <p>None</p> ) : (
               <ul className="space-y-2">
                 {filterLeadsByStatus(status).map((lead) => (
-                  <EditableLead key={lead.id} lead={lead} isAdmin={isAdmin} />
+                  <EditableLead lead={lead} isAdmin={isAdmin} key={lead.id} />
                 ))}
               </ul>
           )}

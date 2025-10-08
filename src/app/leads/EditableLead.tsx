@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
 import { LeadStatus, type Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
 
@@ -168,7 +169,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   }
 
   return (
-    <li className="border p-2 rounded flex flex-col space-y-1">
+    <li className='border p-2 rounded space-y-1 flex flex-col'>
       {pendingStatus === 'sold' ? (
         <div className="flex flex-col space-y-2">
           <label>
@@ -250,23 +251,25 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
         </>
       ) : (
         <>
-          <span className="font-semibold">{lead.title}</span>
-          <span>Price: ${lead.purchase_price}</span>
-          <span>Notes: {lead.notes}</span>
-          <span className="text-gray-500 text-sm">
-            {new Date(lead.created_at).toLocaleString()}
-          </span>
-          {/* Show sale info if sold */}
-          {lead.status === 'sold' && (
-            <div className="text-green-700 text-sm mt-1">
-              <div>Sold on: {lead.sale_date ? new Date(lead.sale_date).toLocaleDateString() : 'N/A'}</div>
-              <div>Sale Price: {lead.sale_price ? `$${lead.sale_price}` : 'N/A'}</div>
-            </div>
-          )}
+          <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
+            <span className="font-semibold">{lead.title}</span>
+            <span>Price: ${lead.purchase_price}</span>
+            <span>Notes: {lead.notes}</span>
+            <span className="text-gray-500 text-sm">
+              {new Date(lead.created_at).toLocaleString()}
+            </span>
+            {/* Show sale info if sold */}
+            {lead.status === 'sold' && (
+              <div className="text-green-700 text-sm mt-1">
+                <div>Sold on: {lead.sale_date ? new Date(lead.sale_date).toLocaleDateString() : 'N/A'}</div>
+                <div>Sale Price: {lead.sale_price ? `$${lead.sale_price}` : 'N/A'}</div>
+              </div>
+            )}
+          </Link>
           <div className="flex space-x-2 mt-2">
             <DeleteLeadButton lead={lead} />
             <button
-              className="bg-yellow-500 text-white px-2 py-1 rounded"
+              className="bg-yellow-500 text-white px-2 py-1 rounded cursor-pointer"
               onClick={() => {
                 setIsEditing(true);
                 setEditValues(lead);
@@ -279,7 +282,8 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
                 <label>Status:</label>
                 <select
                   value={lead.status}
-                  onChange={handleStatusChange}>
+                  onChange={handleStatusChange}
+                  className='cursor-pointer'>
                   <option value="submitted">Submitted</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
