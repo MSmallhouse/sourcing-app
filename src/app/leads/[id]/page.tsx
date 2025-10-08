@@ -40,9 +40,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     <div className="p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">{lead.title}</h1>
       <p>Status: {lead.status}</p>
-      <p>Purchase Price: {lead.purchase_price}</p>
+      <p>Purchase Price: ${lead.purchase_price}</p>
       <p>Notes: {lead.notes}</p>
       <p>Sourcer Email: {lead.profiles?.email ?? 'Unknown'}</p>
+      {lead.sale_date && (
+        <p>Sold On: {new Date(lead.sale_date).toLocaleDateString()}</p>
+      )}
+      {lead.sale_price && (
+        <p>Sale Price: ${lead.sale_price}</p>
+      )}
       <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
         Back
       </button>
