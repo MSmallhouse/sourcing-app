@@ -43,6 +43,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       <p>Purchase Price: ${lead.purchase_price}</p>
       <p>Notes: {lead.notes}</p>
       <p>Sourcer Email: {lead.profiles?.email ?? 'Unknown'}</p>
+      {lead.rejection_reason && (
+        <p>Reason for Rejection: {lead.rejection_reason}</p>
+      )}
       {lead.sale_date && (
         <p>Sold On: {new Date(lead.sale_date).toLocaleDateString()}</p>
       )}

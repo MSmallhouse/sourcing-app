@@ -14,4 +14,5 @@ export interface Lead {
   status: LeadStatus;
   sale_date?: string | null;
   sale_price?: number | null;
+  rejection_reason?: string | null;
 }
