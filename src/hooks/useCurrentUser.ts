@@ -29,12 +29,12 @@ export function useCurrentUser() {
       return;
     }
     supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single()
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle()
       .then(({ data, error }) => {
-        setUserRole(data?.role ?? null);
+        setUserRole(data ? 'admin' : null);
       });
   }, [userId]);
 
