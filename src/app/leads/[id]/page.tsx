@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from '../types';
 
-type LeadWithProfile = Lead & { profiles?: { email: string } };
+type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [lead, setLead] = useState<LeadWithProfile | null>(null);
@@ -20,7 +20,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     async function fetchLead() {
       const { data, error } = await supabase
         .from('leads')
-        .select('*, profiles(email)')
+        .select('*, profiles(email, first_name, last_name)')
         .eq('id', id)
         .single();
       if (error) {
@@ -43,6 +43,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       <p>Purchase Price: ${lead.purchase_price}</p>
       <p>Notes: {lead.notes}</p>
       <p>Sourcer Email: {lead.profiles?.email ?? 'Unknown'}</p>
+      <p>Sourcer Name: {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
       {lead.rejection_reason && (
         <p>Reason for Rejection: {lead.rejection_reason}</p>
       )}
