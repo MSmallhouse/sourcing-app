@@ -251,10 +251,16 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
         </>
       ) : (
         <>
-          <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
-            <span className="font-semibold">{lead.title}</span>
-            <span>Price: ${lead.purchase_price}</span>
-            <span>Notes: {lead.notes}</span>
+          <div className="flex flex-col">
+            <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
+              <span className="font-semibold">{lead.title}</span>
+            </Link>
+            <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
+              <span>Price: ${lead.purchase_price}</span>
+            </Link>
+            <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
+              <span>Notes: {lead.notes}</span>
+            </Link>
             <span className="text-gray-500 text-sm">
               {new Date(lead.created_at).toLocaleString()}
             </span>
@@ -265,7 +271,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
                 <div>Sale Price: {lead.sale_price ? `$${lead.sale_price}` : 'N/A'}</div>
               </div>
             )}
-          </Link>
+          </div>
           <div className="flex space-x-2 mt-2">
             <DeleteLeadButton lead={lead} />
             <button
