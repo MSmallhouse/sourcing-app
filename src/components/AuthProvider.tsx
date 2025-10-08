@@ -11,10 +11,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         // If logged out AND not already on a public route → send to login
         if (!session && !PUBLIC_ROUTES.includes(pathname)) {
           window.location.href = '/login'
+        }
+        // If logged in, upsert the user's email into profiles
+        if (session?.user) {
+          await supabase.from('profiles').upsert({
+            id: session.user.id,
+            email: session.user.email,
+          })
         }
       }
     )
