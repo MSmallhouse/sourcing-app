@@ -1,4 +1,3 @@
-// app/login/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -13,7 +12,7 @@ export default function LoginPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         // Already logged in → redirect
-        router.replace('/debug') // later: '/dashboard'
+        router.replace('/dashboard')
       }
     })
   }, [router])
