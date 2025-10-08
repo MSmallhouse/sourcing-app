@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
 import type { LeadStatus } from '@/app/leads/types'
 import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
 
 const STATUSES: LeadStatus[] = [
   'submitted',
@@ -19,6 +20,11 @@ export default function dashboardPage() {
 
   function filterLeadsByStatus(status: LeadStatus) {
     return leads.filter((lead) => lead.status === status);
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
   }
 
   return (
@@ -38,6 +44,11 @@ export default function dashboardPage() {
           )}
         </div>
       ))}
+      <button
+        onClick={handleLogout}
+        className='bg-red-500 p-3 mt-4 max-w-lg mx-auto cursor-pointer'>
+        Log Out
+      </button>
     </div>
   )
 }
