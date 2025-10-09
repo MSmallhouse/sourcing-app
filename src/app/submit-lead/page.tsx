@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 export default function SubmitLeadPage() {
   const [title, setTitle] = useState('');
+  const [image, setImage] = useState<File | null>(null);
   const [purchasePrice, setPurchasePrice] = useState('');
   const [notes, setNotes] = useState('');
   const [pickupTime, setPickupTime] = useState('');
@@ -37,6 +38,21 @@ export default function SubmitLeadPage() {
     return () => clearInterval(interval);
   }, []);
 
+  async function uploadLeadImage(file: File, leadId: string) {
+    const filePath = `leads/${leadId}/${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('lead-images')
+      .upload(filePath, file);
+  
+    if (error) throw error;
+  
+    const { data: urlData } = supabase.storage
+      .from('lead-images')
+      .getPublicUrl(filePath);
+  
+    return urlData.publicUrl;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickupTime || !userId) return;
@@ -44,7 +60,7 @@ export default function SubmitLeadPage() {
     const [startISO, endISO] = pickupTime.split('|');
   
     // Insert the lead into Supabase
-    const { data, error } = await supabase
+    const { data: lead, error } = await supabase
       .from('leads')
       .insert({
         sourcer_id: userId,
@@ -63,6 +79,16 @@ export default function SubmitLeadPage() {
       return;
     }
 
+    // Upload image
+    let imageUrl = null;
+    if (image) {
+      imageUrl = await uploadLeadImage(image, lead.id);
+      await supabase
+      .from('leads')
+      .update({ image_url: imageUrl })
+      .eq('id', lead.id);
+    }
+
     // Fetch updated available slots
     try {
       const slotsRes = await fetch('/api/available-slots');
@@ -74,6 +100,7 @@ export default function SubmitLeadPage() {
   
     // Clear the form fields
     setTitle('');
+    setImage(null);
     setPurchasePrice('');
     setNotes('');
     setPickupTime('');
@@ -89,6 +116,13 @@ export default function SubmitLeadPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+        />
+        <input
+         className="border p-2 w-full"
+         type="file"
+         accept="image/*"
+         onChange={(e) => setImage(e.target.files?.[0] || null)}
+         required
         />
         <input
           className="border p-2 w-full"
