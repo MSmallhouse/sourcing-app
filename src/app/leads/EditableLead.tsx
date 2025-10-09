@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import { LeadStatus, type Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
+import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 
 const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
 
@@ -29,33 +30,23 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionNotes, setRejectionNotes] = useState('');
 
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
   const handleEditCancel = () => {
     setIsEditing(false);
     setEditValues({});
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
+    setEditImageFile(null);
   };
 
   const handleEditSave = async () => {
     // If a new image is selected, delete the old image and upload the new one
     let newImageUrl = lead.image_url;
     if (editImageFile) {
-      if (lead.image_url) {
-        const url = new URL(lead.image_url);
-        const imagePath = url.pathname.split('/public/lead-images/')[1];
-        const cleanImagePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-        await supabase.storage.from('lead-images').remove([cleanImagePath]);
-      }
-
-      // Upload new image
-      const filePath = `leads/${lead.id}/${Date.now()}_${editImageFile.name}`;
-      const { data, error } = await supabase.storage
-        .from('lead-images')
-        .upload(filePath, editImageFile);
-      if (!error) {
-        const { data: urlData } = supabase.storage
-          .from('lead-images')
-          .getPublicUrl(filePath);
-        newImageUrl = urlData.publicUrl;
-      }
+      if (lead.image_url) await deleteLeadImage(lead.image_url);
+      newImageUrl = await uploadLeadImage(editImageFile, lead.id);
     }
 
     updateLeadInDB({
@@ -68,6 +59,10 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     await syncCalendarEvent(lead, lead.status, lead.status, editValues);
     setIsEditing(false);
     setEditValues({});
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
+    setEditImageFile(null);
   };
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -281,6 +276,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
           />
           <input
             className="border p-1"
+            ref={editFileInputRef}
             type="file"
             accept="image/*"
             onChange={e => setEditImageFile(e.target.files?.[0] || null)}

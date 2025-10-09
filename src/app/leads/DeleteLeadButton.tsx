@@ -14,6 +14,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import type { Lead } from './types';
+import { deleteLeadImage } from '@/lib/supabaseImageHelpers';
 
 type DeleteLeadButtonProps = {
   lead: Lead;
@@ -25,14 +26,7 @@ export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
   const cleanImagePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
 
   const handleDelete = async () => {
-    // Delete the lead image
-    const { error: imageError } = await supabase.storage
-    .from('lead-images')
-    .remove([cleanImagePath]);
-
-    if (imageError) {
-      console.error('Error deleting image: ', imageError);
-    }
+    await deleteLeadImage(lead.image_url)
 
     // Delete the lead from the database
     const { error: leadError } = await supabase

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
@@ -13,6 +13,7 @@ export default function SubmitLeadPage() {
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
 
   const { userId } = useCurrentUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch available slots from Google Calendar with periodic polling
   useEffect(() => {
@@ -100,6 +101,9 @@ export default function SubmitLeadPage() {
   
     // Clear the form fields
     setTitle('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setImage(null);
     setPurchasePrice('');
     setNotes('');
@@ -119,6 +123,7 @@ export default function SubmitLeadPage() {
         />
         <input
          className="border p-2 w-full"
+         ref={fileInputRef}
          type="file"
          accept="image/*"
          onChange={(e) => setImage(e.target.files?.[0] || null)}
