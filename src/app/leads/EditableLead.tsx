@@ -28,11 +28,19 @@ type EditableLeadProps = {
 };
 
 export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
+  const REJECTION_REASONS = [
+    "Too expensive",
+    "Too low quality",
+    "Too far away",
+  ];
+
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
   const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
   const [saleDate, setSaleDate] = useState<string>(lead.sale_date || '');
   const [salePrice, setSalePrice] = useState<string>(lead.sale_price?.toString() || '');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionNotes, setRejectionNotes] = useState('');
 
   const handleCancel = () => {
     setIsEditing(false);
@@ -82,20 +90,33 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as LeadStatus;
-    const wasOnCalendar = ON_CALENDAR_STATUSES.includes(lead.status);
-    const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
+    syncCalendarEvent(lead, lead.status, newStatus);
 
+    // Set this to render the sold dialogue
     if (newStatus === 'sold') {
       setPendingStatus('sold');
       setIsEditing(false); // Exit edit mode if open
       return;
     }
 
+    // Set this to render the rejection dialogue
+    if (newStatus === 'rejected' ) {
+      setPendingStatus('rejected');
+      setIsEditing(false); // Exit edit mode if open
+      return;
+    }
+
     // If changing from sold to any other status, clear sale info
-    const updateData: any = { status: newStatus };
+    let updateData: any = { status: newStatus };
     if (lead.status === 'sold') {
       updateData.sale_date = null;
       updateData.sale_price = null;
+    }
+
+    // If changing from rejected to any other status, clear rejected info
+    updateData = { status: newStatus };
+    if (lead.status === 'rejected') {
+      updateData.rejection_reason = '';
     }
 
     // Update the lead in Supabase
@@ -108,6 +129,58 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       console.error('Error updating lead:', error);
       return;
     }
+
+  }
+
+  const handleConfirmSold = async () => {
+    if (!saleDate || !salePrice) {
+      alert('Please enter both sale date and sale price.');
+      return;
+    }
+
+    // Update lead in Supabase
+    const { error } = await supabase
+      .from('leads')
+      .update({
+        status: 'sold',
+        sale_date: saleDate,
+        sale_price: parseFloat(salePrice),
+      })
+      .eq('id', lead.id);
+
+    if (error) {
+      console.error('Error updating lead to sold:', error);
+      return;
+    }
+    setPendingStatus(null);
+  }
+
+  const handleConfirmRejected = async() => {
+    if (!rejectionReason) {
+      alert('Please select a rejection reason.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('leads')
+      .update({
+        status: 'rejected',
+        rejection_reason: rejectionReason + (rejectionNotes ? `: ${rejectionNotes}` : ''),
+      })
+      .eq('id', lead.id);
+
+    if (error) {
+      console.error('Error updating lead to rejected:', error);
+      return;
+    }
+    setPendingStatus(null);
+    setRejectionReason('');
+    setRejectionNotes('');
+  }
+
+  async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus) {
+    const wasOnCalendar = ON_CALENDAR_STATUSES.includes(oldStatus);
+    const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
 
     if (!wasOnCalendar && willBeOnCalendar) {
       // Create calendar event
@@ -145,29 +218,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     }
   }
 
-  const handleConfirmSold = async () => {
-    if (!saleDate || !salePrice) {
-      alert('Please enter both sale date and sale price.');
-      return;
-    }
-
-    // Update lead in Supabase
-    const { error } = await supabase
-      .from('leads')
-      .update({
-        status: 'sold',
-        sale_date: saleDate,
-        sale_price: parseFloat(salePrice),
-      })
-      .eq('id', lead.id);
-
-    if (error) {
-      console.error('Error updating lead:', error);
-      return;
-    }
-    setPendingStatus(null);
-  }
-
   return (
     <li className='border p-2 rounded space-y-1 flex flex-col'>
       {pendingStatus === 'sold' ? (
@@ -198,6 +248,46 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
               onClick={handleConfirmSold}
             >
               Confirm Sold
+            </button>
+            <button
+              className="bg-gray-300 px-2 py-1 rounded"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : pendingStatus === 'rejected' ? (
+        <div className="flex flex-col space-y-2">
+          <label>
+            Rejection Reason:
+            <select
+              className="border p-1 ml-2"
+              value={rejectionReason}
+              onChange={e => setRejectionReason(e.target.value)}
+              required
+            >
+              <option value="">Select reason</option>
+              {REJECTION_REASONS.map(reason => (
+                <option key={reason} value={reason}>{reason}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Extra Notes (optional):
+            <input
+              type="text"
+              className="border p-1 ml-2"
+              value={rejectionNotes}
+              onChange={e => setRejectionNotes(e.target.value)}
+            />
+          </label>
+          <div className="flex space-x-2 mt-2">
+            <button
+              className="bg-red-500 text-white px-2 py-1 rounded"
+              onClick={handleConfirmRejected}
+            >
+              Confirm Rejection
             </button>
             <button
               className="bg-gray-300 px-2 py-1 rounded"
