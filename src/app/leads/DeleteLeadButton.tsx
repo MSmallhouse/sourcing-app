@@ -20,15 +20,28 @@ type DeleteLeadButtonProps = {
 };
 
 export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
+  const url = new URL(lead.image_url);
+  const imagePath = url.pathname.split('/public/lead-images')[1];
+  const cleanImagePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+
   const handleDelete = async () => {
+    // Delete the lead image
+    const { error: imageError } = await supabase.storage
+    .from('lead-images')
+    .remove([cleanImagePath]);
+
+    if (imageError) {
+      console.error('Error deleting image: ', imageError);
+    }
+
     // Delete the lead from the database
-    const { error } = await supabase
+    const { error: leadError } = await supabase
       .from('leads')
       .delete()
       .eq('id', lead.id);
 
-    if (error) {
-      console.error('Error deleting lead:', error);
+    if (leadError) {
+      console.error('Error deleting lead:', leadError);
       return;
     }
 

@@ -15,4 +15,5 @@ export interface Lead {
   sale_date?: string | null;
   sale_price?: number | null;
   rejection_reason?: string | null;
+  image_url: string;
 }

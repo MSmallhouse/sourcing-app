@@ -22,6 +22,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
   const [saleDate, setSaleDate] = useState<string>(lead.sale_date || '');
   const [salePrice, setSalePrice] = useState<string>(lead.sale_price?.toString() || '');
@@ -34,10 +35,34 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   };
 
   const handleEditSave = async () => {
+    // If a new image is selected, delete the old image and upload the new one
+    let newImageUrl = lead.image_url;
+    if (editImageFile) {
+      if (lead.image_url) {
+        const url = new URL(lead.image_url);
+        const imagePath = url.pathname.split('/public/lead-images/')[1];
+        const cleanImagePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+        await supabase.storage.from('lead-images').remove([cleanImagePath]);
+      }
+
+      // Upload new image
+      const filePath = `leads/${lead.id}/${Date.now()}_${editImageFile.name}`;
+      const { data, error } = await supabase.storage
+        .from('lead-images')
+        .upload(filePath, editImageFile);
+      if (!error) {
+        const { data: urlData } = supabase.storage
+          .from('lead-images')
+          .getPublicUrl(filePath);
+        newImageUrl = urlData.publicUrl;
+      }
+    }
+
     updateLeadInDB({
       title: editValues.title,
       purchase_price: editValues.purchase_price,
       notes: editValues.notes,
+      image_url: newImageUrl,
     });
 
     await syncCalendarEvent(lead, lead.status, lead.status, editValues);
@@ -253,6 +278,12 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
             onChange={(e) =>
               setEditValues((prev) => ({ ...prev, title: e.target.value }))
             }
+          />
+          <input
+            className="border p-1"
+            type="file"
+            accept="image/*"
+            onChange={e => setEditImageFile(e.target.files?.[0] || null)}
           />
           <input
             className="border p-1"
