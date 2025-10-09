@@ -1,17 +1,3 @@
-/*
- * EditableLead Component
- *
- * This component displays an individual lead and provides full edit functionality.
- * In view mode, it shows the lead's details along with "Edit" and "Delete" buttons.
- * When editing is activated, it switches to edit mode, displaying input fields for title,
- * purchase price, and notes alongside "Save" and "Cancel" buttons.
- *
- * When the lead is updated, it saves changes to Supabase and, if a Google Calendar event is linked,
- * it also updates the event via the /api/edit-event endpoint.
- *
- * The component leverages the DeleteLeadButton component for handling deletions.
- */
-
 'use client';
 
 import { useState } from 'react';
@@ -42,94 +28,47 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionNotes, setRejectionNotes] = useState('');
 
-  const handleCancel = () => {
+  const handleEditCancel = () => {
     setIsEditing(false);
     setEditValues({});
   };
 
-  const handleSave = async () => {
-    // Update the lead in Supabase
-    const { error } = await supabase
-      .from('leads')
-      .update({
-        title: editValues.title,
-        purchase_price: editValues.purchase_price,
-        notes: editValues.notes,
-      })
-      .eq('id', lead.id);
+  const handleEditSave = async () => {
+    updateLeadInDB({
+      title: editValues.title,
+      purchase_price: editValues.purchase_price,
+      notes: editValues.notes,
+    });
 
-    if (error) {
-      console.error('Error updating lead:', error);
-      return;
-    }
-
-    // If the lead has an associated Google Calendar event, update it too.
-    if (lead.calendar_event_id) {
-      try {
-        const res = await fetch('/api/edit-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            calendarEventId: lead.calendar_event_id,
-            title: editValues.title,
-            notes: editValues.notes,
-          }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          console.error('Error updating calendar event:', result.error);
-        }
-      } catch (err) {
-        console.error('Error calling edit-event API:', err);
-      }
-    }
-
+    await syncCalendarEvent(lead, lead.status, lead.status, editValues);
     setIsEditing(false);
     setEditValues({});
   };
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as LeadStatus;
-    syncCalendarEvent(lead, lead.status, newStatus);
+    let updatedData: any = { status: newStatus };
 
-    // Set this to render the sold dialogue
+    // Render the sold dialogue
     if (newStatus === 'sold') {
       setPendingStatus('sold');
-      setIsEditing(false); // Exit edit mode if open
+      setIsEditing(false);
       return;
     }
 
-    // Set this to render the rejection dialogue
+    // Render the rejected dialogue
     if (newStatus === 'rejected' ) {
       setPendingStatus('rejected');
-      setIsEditing(false); // Exit edit mode if open
+      setIsEditing(false);
       return;
     }
 
-    // If changing from sold to any other status, clear sale info
-    let updateData: any = { status: newStatus };
-    if (lead.status === 'sold') {
-      updateData.sale_date = null;
-      updateData.sale_price = null;
-    }
-
-    // If changing from rejected to any other status, clear rejected info
-    updateData = { status: newStatus };
-    if (lead.status === 'rejected') {
-      updateData.rejection_reason = '';
-    }
-
-    // Update the lead in Supabase
-    const { error } = await supabase
-      .from('leads')
-      .update(updateData)
-      .eq('id', lead.id);
-
-    if (error) {
-      console.error('Error updating lead:', error);
-      return;
-    }
-
+    // Since status isn't sold or rejected, we can clear this info
+    updatedData.sale_date = null;
+    updatedData.sale_price = null;
+    updatedData.rejection_reason = '';
+    syncCalendarEvent(lead, lead.status, newStatus);
+    await updateLeadInDB( updatedData )
   }
 
   const handleConfirmSold = async () => {
@@ -138,20 +77,13 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       return;
     }
 
-    // Update lead in Supabase
-    const { error } = await supabase
-      .from('leads')
-      .update({
-        status: 'sold',
-        sale_date: saleDate,
-        sale_price: parseFloat(salePrice),
-      })
-      .eq('id', lead.id);
+    await updateLeadInDB({
+      status: 'sold',
+      sale_date: saleDate,
+      sale_price: parseFloat(salePrice),
+    });
 
-    if (error) {
-      console.error('Error updating lead to sold:', error);
-      return;
-    }
+    await syncCalendarEvent(lead, lead.status, 'sold');
     setPendingStatus(null);
   }
 
@@ -161,60 +93,76 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       return;
     }
 
-    const { error } = await supabase
-      .from('leads')
-      .update({
+    await updateLeadInDB({
         status: 'rejected',
         rejection_reason: rejectionReason + (rejectionNotes ? `: ${rejectionNotes}` : ''),
-      })
-      .eq('id', lead.id);
+    });
 
-    if (error) {
-      console.error('Error updating lead to rejected:', error);
-      return;
-    }
+    await syncCalendarEvent(lead, lead.status, 'rejected');
     setPendingStatus(null);
     setRejectionReason('');
     setRejectionNotes('');
   }
 
-  async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus) {
+  async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus, editValues?: Partial<Lead>) {
     const wasOnCalendar = ON_CALENDAR_STATUSES.includes(oldStatus);
     const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
+    try {
+      if (!wasOnCalendar && willBeOnCalendar) {
+        // Create calendar event
+        const res = await fetch('/api/create-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: lead.title,
+            notes: lead.notes,
+            startISO: lead.pickup_start,
+            endISO: lead.pickup_end,
+          }),
+        });
+        const result = await res.json();
+        if (result.success && result.eventId) {
+          await updateLeadInDB({ calendar_event_id: result.eventId });
+        }
 
-    if (!wasOnCalendar && willBeOnCalendar) {
-      // Create calendar event
-      const res = await fetch('/api/create-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: lead.title,
-          notes: lead.notes,
-          startISO: lead.pickup_start,
-          endISO: lead.pickup_end,
-        }),
-      });
-      const result = await res.json();
-      if (result.success && result.eventId) {
-        // Save the calendar event ID to the lead
-        await supabase
-          .from('leads')
-          .update({ calendar_event_id: result.eventId })
-          .eq('id', lead.id);
+      } else if (wasOnCalendar && !willBeOnCalendar) {
+        // Delete calendar event
+        const res = await fetch('/api/delete-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          await updateLeadInDB({ calendar_event_id: null });
+        }
+
+      } else if (lead.calendar_event_id && editValues) {
+        // Edit calendar event
+        const res = await fetch('/api/edit-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            calendarEventId: lead.calendar_event_id,
+            title: editValues.title ?? lead.title,
+            notes: editValues.notes ?? lead.notes,
+          }),
+        });
       }
+    } catch (error) {
+      console.error('Error syncing calenar event:', error);
+    }
+  }
 
-    } else if (wasOnCalendar && !willBeOnCalendar) {
-      // Delete calendar event
-      await fetch('/api/delete-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
-      });
-      // Remove the calendar_event_id from the lead
-      await supabase
-        .from('leads')
-        .update({ calendar_event_id: null })
-        .eq('id', lead.id);
+  async function updateLeadInDB(updatedData: any) {
+    const { error } = await supabase
+      .from('leads')
+      .update(updatedData)
+      .eq('id', lead.id)
+
+    if (error) {
+      console.error('Error updating lead in database', error);
+      return;
     }
   }
 
@@ -327,13 +275,13 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
           <div className="flex space-x-2 mt-2">
             <button
               className="bg-green-500 text-white px-2 py-1 rounded"
-              onClick={handleSave}
+              onClick={handleEditSave}
             >
               Save
             </button>
             <button
               className="bg-gray-300 px-2 py-1 rounded"
-              onClick={handleCancel}
+              onClick={handleEditCancel}
             >
               Cancel
             </button>
