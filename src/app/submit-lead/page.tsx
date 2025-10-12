@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useRouter } from 'next/navigation'
 
 export default function SubmitLeadPage() {
+  const router = useRouter()
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [purchasePrice, setPurchasePrice] = useState('');
@@ -90,15 +92,6 @@ export default function SubmitLeadPage() {
       .eq('id', lead.id);
     }
 
-    // Fetch updated available slots
-    try {
-      const slotsRes = await fetch('/api/available-slots');
-      const slots = await slotsRes.json();
-      setAvailableSlots(slots);
-    } catch (fetchError) {
-      console.error('Error fetching updated available slots:', fetchError);
-    }
-  
     // Clear the form fields
     setTitle('');
     if (fileInputRef.current) {
@@ -108,6 +101,8 @@ export default function SubmitLeadPage() {
     setPurchasePrice('');
     setNotes('');
     setPickupTime('');
+
+    router.push('/dashboard');
   };
 
   return (
