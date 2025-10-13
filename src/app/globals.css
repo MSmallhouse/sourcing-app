@@ -28,3 +28,7 @@ body {
 button {
   cursor: pointer;
 }
+
+p {
+  margin-bottom: 16px;
+}

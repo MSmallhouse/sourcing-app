@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LeadStatus, type Lead } from './types';
 import { DeleteLeadButton } from './DeleteLeadButton';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
@@ -187,7 +188,16 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
   }
 
   return (
-    <li className='border p-2 rounded space-y-1 flex flex-col'>
+    <li className='border p-2 rounded space-y-1 flex flex-row'>
+      <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center">
+        <Image
+          src={lead.image_url}
+          alt={lead.title}
+          width={100}
+          height={100}
+          className='object-cover object-center'
+        />
+      </div>
       {pendingStatus === 'sold' ? (
         <div className="flex flex-col space-y-2">
           <label>

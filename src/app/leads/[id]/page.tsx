@@ -4,7 +4,9 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import Image from 'next/image';
 import type { Lead } from '../types';
+import { formatDatestring } from '@/lib/formatDatestring'
 
 type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };
 
@@ -38,21 +40,33 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="p-8 max-w-lg mx-auto">
+      <div className="w-full aspect-square overflow-hidden flex mb-6">
+        <Image
+          src={lead.image_url}
+          alt={lead.title}
+          width={400}
+          height={400}
+          className='object-cover object-center'
+        />
+      </div>
       <h1 className="text-2xl font-bold mb-4">{lead.title}</h1>
-      <p>Status: {lead.status}</p>
-      <p>Purchase Price: ${lead.purchase_price}</p>
-      <p>Notes: {lead.notes}</p>
-      <p>Sourcer Email: {lead.profiles?.email ?? 'Unknown'}</p>
-      <p>Sourcer Name: {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
+      <p><span className="font-bold">Status:</span> {lead.status}</p>
+      <p><span className="font-bold">Purchase Price:</span> ${lead.purchase_price}</p>
+      <p><span className="font-bold">Notes:</span> {lead.notes}</p>
+      <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
+      <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
+      <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
+      <p><span className="font-bold">Sourcer Name:</span> {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
       {lead.rejection_reason && (
-        <p>Reason for Rejection: {lead.rejection_reason}</p>
+        <p><span className="font-bold">Reason for Rejection:</span> {lead.rejection_reason}</p>
       )}
       {lead.sale_date && (
-        <p>Sold On: {new Date(lead.sale_date).toLocaleDateString()}</p>
+        <p><span className="font-bold">Sold On:</span> {new Date(lead.sale_date).toLocaleDateString()}</p>
       )}
       {lead.sale_price && (
-        <p>Sale Price: ${lead.sale_price}</p>
+        <p><span className="font-bold">Sale Price:</span> ${lead.sale_price}</p>
       )}
+      <p><span className="font-bold">Submission Timestamp:</span> {formatDatestring(lead.created_at)}</p>
       <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
         Back
       </button>
