@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LeadStatus, type Lead } from './types';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
+import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
+import { updateLeadInDB } from '@/lib/updateLeadInDB';
 
 const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
 
@@ -49,7 +50,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       newImageUrl = await uploadLeadImage(editImageFile, lead.id);
     }
 
-    updateLeadInDB({
+    updateLeadInDB(lead, {
       title: editValues.title,
       purchase_price: editValues.purchase_price,
       notes: editValues.notes,
@@ -88,7 +89,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     updatedData.sale_price = null;
     updatedData.rejection_reason = '';
     syncCalendarEvent(lead, lead.status, newStatus);
-    await updateLeadInDB( updatedData )
+    await updateLeadInDB( lead, updatedData )
   }
 
   const handleConfirmSold = async () => {
@@ -97,7 +98,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       return;
     }
 
-    await updateLeadInDB({
+    await updateLeadInDB(lead, {
       status: 'sold',
       sale_date: saleDate,
       sale_price: parseFloat(salePrice),
@@ -113,7 +114,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       return;
     }
 
-    await updateLeadInDB({
+    await updateLeadInDB(lead, {
         status: 'rejected',
         rejection_reason: rejectionReason + (rejectionNotes ? `: ${rejectionNotes}` : ''),
     });
@@ -122,68 +123,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     setPendingStatus(null);
     setRejectionReason('');
     setRejectionNotes('');
-  }
-
-  async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus, editValues?: Partial<Lead>) {
-    const wasOnCalendar = ON_CALENDAR_STATUSES.includes(oldStatus);
-    const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
-    try {
-      if (!wasOnCalendar && willBeOnCalendar) {
-        // Create calendar event
-        const res = await fetch('/api/create-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: lead.title,
-            notes: lead.notes,
-            startISO: lead.pickup_start,
-            endISO: lead.pickup_end,
-          }),
-        });
-        const result = await res.json();
-        if (result.success && result.eventId) {
-          await updateLeadInDB({ calendar_event_id: result.eventId });
-        }
-
-      } else if (wasOnCalendar && !willBeOnCalendar) {
-        // Delete calendar event
-        const res = await fetch('/api/delete-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
-        });
-        const result = await res.json();
-        if (result.success) {
-          await updateLeadInDB({ calendar_event_id: null });
-        }
-
-      } else if (lead.calendar_event_id && editValues) {
-        // Edit calendar event
-        const res = await fetch('/api/edit-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            calendarEventId: lead.calendar_event_id,
-            title: editValues.title ?? lead.title,
-            notes: editValues.notes ?? lead.notes,
-          }),
-        });
-      }
-    } catch (error) {
-      console.error('Error syncing calenar event:', error);
-    }
-  }
-
-  async function updateLeadInDB(updatedData: any) {
-    const { error } = await supabase
-      .from('leads')
-      .update(updatedData)
-      .eq('id', lead.id)
-
-    if (error) {
-      console.error('Error updating lead in database', error);
-      return;
-    }
   }
 
   return (
