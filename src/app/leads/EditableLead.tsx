@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LeadStatus, type Lead } from './types';
-import { DeleteLeadButton } from './DeleteLeadButton';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 
 const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
@@ -348,7 +347,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
             )}
           </div>
           <div className="flex space-x-2 mt-2">
-            <DeleteLeadButton lead={lead} />
             <button
               className="bg-yellow-500 text-white px-2 py-1 rounded cursor-pointer"
               onClick={() => {

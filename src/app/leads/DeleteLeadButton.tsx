@@ -13,6 +13,7 @@
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
+import {useRouter } from 'next/navigation'
 import type { Lead } from './types';
 import { deleteLeadImage } from '@/lib/supabaseImageHelpers';
 
@@ -21,9 +22,7 @@ type DeleteLeadButtonProps = {
 };
 
 export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
-  const url = new URL(lead.image_url);
-  const imagePath = url.pathname.split('/public/lead-images')[1];
-  const cleanImagePath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+  const router = useRouter();
 
   const handleDelete = async () => {
     await deleteLeadImage(lead.image_url)
@@ -40,7 +39,10 @@ export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
     }
 
     // Only attempt to delete the calendar event if it exists on the calendar
-    if (!lead.calendar_event_id) return;
+    if (!lead.calendar_event_id) {
+      router.push('/dashboard');
+      return;
+    }
 
     // Delete the corresponding Google Calendar event
     try {
@@ -57,6 +59,8 @@ export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
     } catch (err) {
       console.error('Error calling delete-event API:', err);
     }
+
+    router.push('/dashboard');
   };
 
   return (

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
 import type { Lead } from '../types';
+import { DeleteLeadButton } from '../DeleteLeadButton';
 import { formatDatestring } from '@/lib/formatDatestring'
 
 type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };
@@ -67,6 +68,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         <p><span className="font-bold">Sale Price:</span> ${lead.sale_price}</p>
       )}
       <p><span className="font-bold">Submission Timestamp:</span> {formatDatestring(lead.created_at)}</p>
+      <div>
+        <DeleteLeadButton lead={lead} />
+      </div>
       <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
         Back
       </button>
