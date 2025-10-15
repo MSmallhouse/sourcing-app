@@ -1,20 +1,25 @@
 'use client';
 
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
-import { type LeadWithProfile } from '../types';
+import { type LeadWithProfile, type Lead } from '../types';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { DeleteLeadButton } from '../DeleteLeadButton';
+import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
+import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 import { formatDatestring } from '@/lib/formatDatestring'
 import { StatusChangeButton } from '../StatusChangeButton';
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
-
   const [lead, setLead] = useState<LeadWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValues, setEditValues] = useState<Partial<Lead>>({});
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   const { userId, isAdmin } = useCurrentUser();
   const router = useRouter();
@@ -37,6 +42,43 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     fetchLead();
   }, [id]);
 
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditValues({});
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
+    setEditImageFile(null);
+  };
+
+  const handleEditSave = async () => {
+    if (!lead) return;
+    // If a new image is selected, delete the old image and upload the new one
+    let newImageUrl = lead.image_url;
+    if (editImageFile) {
+      if (lead.image_url) await deleteLeadImage(lead.image_url);
+      newImageUrl = await uploadLeadImage(editImageFile, lead.id);
+    }
+
+    const freshLead = await updateLeadsTableAndCalendar({
+      lead,
+      updatedData: {
+        title: editValues.title,
+        purchase_price: editValues.purchase_price,
+        notes: editValues.notes,
+        image_url: newImageUrl,
+      },
+    });
+
+    if (freshLead) setLead(freshLead);
+    setIsEditing(false);
+    setEditValues({});
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
+    setEditImageFile(null);
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (!lead) return <div className="p-8">Lead not found.</div>;
 
@@ -51,14 +93,79 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           className='object-cover object-center'
         />
       </div>
-      <h1 className="text-2xl font-bold mb-4">{lead.title}</h1>
+
+      {isEditing && (
+        <div className="mb-4">
+          <input
+            type="file"
+            accept="image/*"
+            ref={editFileInputRef}
+            style={{ display: 'none' }}
+            onChange={e => setEditImageFile(e.target.files?.[0] || null)}
+            id="edit-image-input"
+          />
+          <label htmlFor="edit-image-input">
+            <button
+              type="button"
+              className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+              onClick={() => editFileInputRef.current?.click()}
+            >
+              {editImageFile ? "Change File" : "Choose File"}
+            </button>
+          </label>
+          <span className="ml-2 text-gray-600">
+            {editImageFile ? editImageFile.name : ''}
+          </span>
+        </div>
+      )}
+
+      <h1 className="text-2xl font-bold mb-4">
+        {isEditing ? (
+          <input
+            className="border p-1"
+            value={editValues.title ?? lead.title}
+            onChange={ e =>setEditValues(prev => ({ ...prev, title: e.target.value })) }
+            style={{ width: 200 }}
+          />
+        ) : (
+          lead.title
+        )}
+      </h1>
+
       {isAdmin ? (
-        <StatusChangeButton lead={lead} setLead={setLead} />
+        <p><StatusChangeButton lead={lead} setLead={setLead} /></p>
       ) : (
         <p><span className="font-bold">Status:</span> {lead.status}</p>
       )}
-      <p><span className="font-bold">Purchase Price:</span> ${lead.purchase_price}</p>
-      <p><span className="font-bold">Notes:</span> {lead.notes}</p>
+
+      <p>
+        <span className="font-bold">Purchase Price: </span>
+        {isEditing ? (
+          <input
+            className="border p-1"
+            type="number"
+            value={`$${editValues.purchase_price ?? lead.purchase_price}`}
+            onChange={ e => setEditValues(prev => ({...prev, purchase_price: parseFloat(e.target.value)})) }
+          />
+        ) : (
+          <>${lead.purchase_price}</>
+        )}
+      </p>
+
+      <p>
+        <span className="font-bold">Notes: </span>
+        {isEditing ? (
+          <input
+            className="border p-1"
+            value={editValues.notes ?? lead.notes}
+            onChange={ e =>setEditValues(prev => ({ ...prev, notes: e.target.value })) }
+            style={{ width: 200 }}
+          />
+        ) : (
+          lead.notes
+        )}
+      </p>
+
       <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
       <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
       <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
@@ -73,12 +180,43 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         <p><span className="font-bold">Sale Price:</span> ${lead.sale_price}</p>
       )}
       <p><span className="font-bold">Submission Timestamp:</span> {formatDatestring(lead.created_at)}</p>
+
       <div>
-        <DeleteLeadButton lead={lead} />
+        {isEditing ? (
+          <>
+            <div className="flex space-x-2 mt-2">
+              <button
+                className="bg-green-500 text-white px-2 py-1 rounded"
+                onClick={handleEditSave}
+              >
+                Save
+              </button>
+              <button
+                className="bg-gray-300 px-2 py-1 rounded"
+                onClick={handleEditCancel}
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex space-x-2 mt-2">
+            <button
+              className="bg-yellow-500 text-white px-2 py-1 rounded cursor-pointer"
+              onClick={() => {
+                setIsEditing(true);
+                setEditValues(lead);
+              }}
+            >
+              Edit
+            </button>
+            <DeleteLeadButton lead={lead} />
+          </div>
+        )}
+        <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
+          Back
+        </button>
       </div>
-      <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
-        Back
-      </button>
-    </div>
+  </div>
   );
 }

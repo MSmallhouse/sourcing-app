@@ -1,9 +1,8 @@
 'use client'
-import { EditableLead } from '@/app/leads/EditableLead';
+import { LeadCard } from '@/app/leads/LeadCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
 import type { LeadStatus } from '@/app/leads/types'
-import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
 const STATUSES: LeadStatus[] = [
@@ -38,7 +37,7 @@ export default function dashboardPage() {
             filterLeadsByStatus(status).length === 0 ? ( <p>None</p> ) : (
               <ul className="space-y-2">
                 {filterLeadsByStatus(status).map((lead) => (
-                  <EditableLead lead={lead} isAdmin={isAdmin} key={lead.id} />
+                  <LeadCard lead={lead} key={lead.id} />
                 ))}
               </ul>
           )}
