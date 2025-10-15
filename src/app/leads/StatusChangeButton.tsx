@@ -3,8 +3,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { LeadStatus, type Lead } from './types';
 import { useState } from 'react';
-import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
-import { updateLeadInDB } from '@/lib/updateLeadInDB';
 import { type LeadWithProfile } from '@/app/leads/types';
 import { updateLeadAndSync } from '@/lib/updateLeadAndSync';
 

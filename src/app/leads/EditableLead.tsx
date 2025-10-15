@@ -3,10 +3,9 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LeadStatus, type Lead } from './types';
+import { type Lead } from './types';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
-import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
-import { updateLeadInDB } from '@/lib/updateLeadInDB';
+import { updateLeadAndSync } from '@/lib/updateLeadAndSync';
 
 type EditableLeadProps = {
   lead: Lead;
@@ -37,14 +36,18 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       newImageUrl = await uploadLeadImage(editImageFile, lead.id);
     }
 
-    updateLeadInDB(lead, {
-      title: editValues.title,
-      purchase_price: editValues.purchase_price,
-      notes: editValues.notes,
-      image_url: newImageUrl,
+    await updateLeadAndSync({
+      lead,
+      updatedData: {
+        title: editValues.title,
+        purchase_price: editValues.purchase_price,
+        notes: editValues.notes,
+        image_url: newImageUrl,
+      },
+      newStatus: lead.status,
+      editValues,
     });
 
-    await syncCalendarEvent(lead, lead.status, lead.status, editValues);
     setIsEditing(false);
     setEditValues({});
     if (editFileInputRef.current) {

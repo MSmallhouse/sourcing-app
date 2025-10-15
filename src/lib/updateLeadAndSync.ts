@@ -1,18 +1,90 @@
-import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
-import { updateLeadInDB } from '@/lib/updateLeadInDB';
+//import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
+//import { updateLeadInDB } from '@/lib/updateLeadInDB';
 import { supabase } from '@/lib/supabaseClient';
-import { type LeadWithProfile, LeadStatus } from '@/app/leads/types';
+import { type Lead, type LeadWithProfile, LeadStatus } from '@/app/leads/types';
+
+async function updateLeadInDB(lead: Lead, updatedData: any) {
+  const { error } = await supabase
+    .from('leads')
+    .update(updatedData)
+    .eq('id', lead.id)
+
+  if (error) {
+    console.error('Error updating lead in database', error);
+    return;
+  }
+}
+
+export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus, editValues?: Partial<Lead>) {
+  const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
+  const wasOnCalendar = ON_CALENDAR_STATUSES.includes(oldStatus);
+  const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
+  try {
+    if (!wasOnCalendar && willBeOnCalendar) {
+      // Create calendar event
+      const res = await fetch('/api/create-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: lead.title,
+          notes: lead.notes,
+          startISO: lead.pickup_start,
+          endISO: lead.pickup_end,
+        }),
+      });
+      const result = await res.json();
+      if (result.success && result.eventId) {
+        return result.eventId;
+      }
+      return null;
+
+    } else if (wasOnCalendar && !willBeOnCalendar) {
+      // Delete calendar event
+      const res = await fetch('/api/delete-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarEventId: lead.calendar_event_id }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        return null;
+      }
+      return lead.calendar_event_id ?? null;
+
+    } else if (lead.calendar_event_id && editValues) {
+      // Edit calendar event
+      const res = await fetch('/api/edit-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          calendarEventId: lead.calendar_event_id,
+          title: editValues.title ?? lead.title,
+          notes: editValues.notes ?? lead.notes,
+        }),
+      });
+      return lead.calendar_event_id;
+    }
+    return lead.calendar_event_id ?? null;
+
+  } catch (error) {
+    console.error('Error syncing calenar event:', error);
+    return lead.calendar_event_id ?? null;
+  } 
+}
 
 export async function updateLeadAndSync({
   lead,
   updatedData,
   newStatus,
+  editValues,
 }: {
   lead: LeadWithProfile;
   updatedData: any;
   newStatus: LeadStatus;
+  editValues?: Partial<Lead>;
 }): Promise<LeadWithProfile | null> {
-  await syncCalendarEvent(lead, lead.status, newStatus);
+
+  updatedData.calendar_event_id = await syncCalendarEvent(lead, lead.status, newStatus, editValues);
   await updateLeadInDB(lead, updatedData);
 
   // Refetch the full lead with profile info
