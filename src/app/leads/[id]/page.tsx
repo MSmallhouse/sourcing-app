@@ -14,11 +14,13 @@ import { formatDatestring } from '@/lib/formatDatestring'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { StatusChangeButton } from '../StatusChangeButton';
 
+type LeadEditValues = Partial<Omit<Lead, 'purchase_price'>> & { purchase_price?: string };
+
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [lead, setLead] = useState<LeadWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editValues, setEditValues] = useState<Partial<Lead>>({});
+  const [editValues, setEditValues] = useState<LeadEditValues>({});
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,7 +67,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       lead,
       updatedData: {
         title: editValues.title,
-        purchase_price: editValues.purchase_price,
+        purchase_price:
+          editValues.purchase_price === undefined
+            ? 0
+            : Number(editValues.purchase_price),
         notes: editValues.notes,
         image_url: newImageUrl,
         pickup_start: editValues.pickup_start ?? lead.pickup_start,
@@ -147,8 +152,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <input
             className="border p-1"
             type="number"
-            value={editValues.purchase_price ?? lead.purchase_price}
-            onChange={ e => setEditValues(prev => ({...prev, purchase_price: parseFloat(e.target.value)})) }
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={editValues.purchase_price ?? ''}
+            onChange={e => {
+              // Only allow numbers or empty string
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setEditValues(prev => ({ ...prev, purchase_price: val }));
+              }
+            }}
           />
         ) : (
           <>${lead.purchase_price}</>
@@ -229,7 +242,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               className="bg-yellow-500 text-white px-2 py-1 rounded cursor-pointer"
               onClick={() => {
                 setIsEditing(true);
-                setEditValues(lead);
+                setEditValues({
+                  ...lead,
+                  purchase_price: lead.purchase_price?.toString() ?? '',
+                });
               }}
             >
               Edit

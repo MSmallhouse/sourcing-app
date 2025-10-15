@@ -44,7 +44,7 @@ export default function SubmitLeadPage() {
       .insert({
         sourcer_id: userId,
         title,
-        purchase_price: parseFloat(purchasePrice),
+        purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
         notes,
         pickup_start: startISO,
         pickup_end: endISO,
@@ -114,9 +114,16 @@ export default function SubmitLeadPage() {
           className="border p-2 w-full"
           placeholder="Purchase Price"
           type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="off"
           value={purchasePrice}
-          onChange={(e) => setPurchasePrice(e.target.value)}
-          required
+          onChange={e => {
+            const val = e.target.value;
+            if (/^\d*$/.test(val)) {
+              setPurchasePrice(val);
+            }
+          }}
         />
         <textarea
           className="border p-2 w-full"
