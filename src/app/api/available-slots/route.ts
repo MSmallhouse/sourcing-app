@@ -31,6 +31,7 @@ export async function GET() {
   });
 
   const events = response.data.items || [];
+  console.log(JSON.stringify(events, null, 2))
 
   // Generate all 1-hour slots between 9 AM and 5 PM for the next 7 days
   const allSlots = [];

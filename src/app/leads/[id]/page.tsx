@@ -87,13 +87,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="p-8 max-w-lg mx-auto">
-      <div className="w-full aspect-square overflow-hidden flex mb-6">
+      <div className="w-full aspect-square overflow-hidden flex mb-6 relative">
         <Image
           src={lead.image_url}
           alt={lead.title}
-          width={400}
-          height={400}
           className='object-cover object-center'
+          fill
+          priority
         />
       </div>
 
@@ -113,7 +113,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
               onClick={() => editFileInputRef.current?.click()}
             >
-              {editImageFile ? "Change File" : "Choose File"}
+              {"Change Image File"}
             </button>
           </label>
           <span className="ml-2 text-gray-600">
@@ -147,7 +147,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <input
             className="border p-1"
             type="number"
-            value={`$${editValues.purchase_price ?? lead.purchase_price}`}
+            value={editValues.purchase_price ?? lead.purchase_price}
             onChange={ e => setEditValues(prev => ({...prev, purchase_price: parseFloat(e.target.value)})) }
           />
         ) : (
@@ -184,7 +184,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               pickup_end: end,
             }));
           }}
-          required
+          lead={lead}
         />
       ) : (
         <>

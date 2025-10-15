@@ -7,13 +7,13 @@ import { type Lead } from './types';
 export function LeadCard({ lead }: { lead: Lead }) {
   return (
     <li className='border p-2 rounded space-y-1 flex flex-row'>
-      <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center">
+      <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center relative">
         <Image
           src={lead.image_url}
           alt={lead.title}
-          width={100}
-          height={100}
           className='object-cover object-center'
+          fill
+          sizes="100px"
         />
       </div>
       <div className="flex flex-col">

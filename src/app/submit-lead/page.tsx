@@ -127,7 +127,6 @@ export default function SubmitLeadPage() {
         <PickupTimeSelect
           value={pickupTime}
           onChange={setPickupTime}
-          required
         />
         <button
           type="submit"
