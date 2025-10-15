@@ -58,6 +58,8 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
           calendarEventId: lead.calendar_event_id,
           title: editValues.title,
           notes: editValues.notes,
+          pickup_start: editValues.pickup_start,
+          pickup_end: editValues.pickup_end,
         }),
       });
       return lead.calendar_event_id;
@@ -83,6 +85,8 @@ export async function updateLeadsTableAndCalendar({
     // extract only the info that needs to be updated on the calendar here
     title: updatedData.title ?? lead.title ?? '',
     notes: updatedData.notes ?? lead.notes ?? '',
+    pickup_start: updatedData.pickup_start ?? lead.pickup_start,
+    pickup_end: updatedData.pickup_end ?? lead.pickup_end,
   }
   updatedData.calendar_event_id = await syncCalendarEvent(lead, lead.status, newStatus, calendarEditValues);
   await updateLeadInDB(lead, updatedData);

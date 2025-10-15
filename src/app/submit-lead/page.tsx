@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRouter } from 'next/navigation'
+import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 
 export default function SubmitLeadPage() {
   const router = useRouter()
@@ -12,34 +13,9 @@ export default function SubmitLeadPage() {
   const [purchasePrice, setPurchasePrice] = useState('');
   const [notes, setNotes] = useState('');
   const [pickupTime, setPickupTime] = useState('');
-  const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string }[]>([]);
 
   const { userId } = useCurrentUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch available slots from Google Calendar with periodic polling
-  useEffect(() => {
-    async function fetchSlots() {
-      try {
-        const res = await fetch('/api/available-slots');
-        const slots = await res.json();
-        setAvailableSlots(slots);
-      } catch (error) {
-        console.error('Error fetching available slots:', error);
-      }
-    }
-
-    // Initial fetch
-    fetchSlots();
-
-    // Set up periodic polling every 1 minute
-    const interval = setInterval(() => {
-      fetchSlots();
-    }, 60 * 1000); // 1 minute
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
 
   async function uploadLeadImage(file: File, leadId: string) {
     const filePath = `leads/${leadId}/${Date.now()}_${file.name}`;
@@ -148,25 +124,11 @@ export default function SubmitLeadPage() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
-        <select
-          className="border p-2 w-full"
+        <PickupTimeSelect
           value={pickupTime}
-          onChange={(e) => setPickupTime(e.target.value)}
+          onChange={setPickupTime}
           required
-        >
-          <option value="">Select pickup time</option>
-          {availableSlots.map((slot, idx) => {
-            const start = new Date(slot.start);
-            const end = new Date(slot.end);
-            const day = start.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-            const time = `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
-            return (
-              <option key={idx} value={`${slot.start}|${slot.end}`}>
-                {day}, {time}
-              </option>
-            );
-          })}
-        </select>
+        />
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"

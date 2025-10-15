@@ -11,6 +11,7 @@ import { DeleteLeadButton } from '../DeleteLeadButton';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 import { formatDatestring } from '@/lib/formatDatestring'
+import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { StatusChangeButton } from '../StatusChangeButton';
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,6 +68,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         purchase_price: editValues.purchase_price,
         notes: editValues.notes,
         image_url: newImageUrl,
+        pickup_start: editValues.pickup_start ?? lead.pickup_start,
+        pickup_end: editValues.pickup_end ?? lead.pickup_end,
       },
     });
 
@@ -166,8 +169,29 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         )}
       </p>
 
-      <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
-      <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
+      {isEditing ? (
+        <PickupTimeSelect
+          value={
+            editValues.pickup_start && editValues.pickup_end
+              ? `${editValues.pickup_start}|${editValues.pickup_end}`
+              : `${lead.pickup_start}|${lead.pickup_end}`
+          }
+          onChange={val => {
+            const [start, end] = val.split('|');
+            setEditValues(prev => ({
+              ...prev,
+              pickup_start: start,
+              pickup_end: end,
+            }));
+          }}
+          required
+        />
+      ) : (
+        <>
+          <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
+          <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
+        </>
+      )}
       <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
       <p><span className="font-bold">Sourcer Name:</span> {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
       {lead.rejection_reason && (

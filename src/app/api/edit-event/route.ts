@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 export async function POST(req: Request) {
   try {
-    const { calendarEventId, title, notes } = await req.json();
+    const { calendarEventId, title, notes, pickup_start, pickup_end } = await req.json();
 
     if (!calendarEventId) {
       return NextResponse.json({ success: false, error: 'Missing calendarEventId' });
@@ -28,6 +28,8 @@ export async function POST(req: Request) {
       requestBody: {
         summary: title,
         description: notes,
+        start: { dateTime: pickup_start },
+        end: { dateTime: pickup_end },
       },
     });
 
