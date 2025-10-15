@@ -17,11 +17,7 @@ import {useRouter } from 'next/navigation'
 import type { Lead } from './types';
 import { deleteLeadImage } from '@/lib/supabaseImageHelpers';
 
-type DeleteLeadButtonProps = {
-  lead: Lead;
-};
-
-export function DeleteLeadButton({ lead }: DeleteLeadButtonProps) {
+export function DeleteLeadButton({ lead }: { lead: Lead }) {
   const router = useRouter();
 
   const handleDelete = async () => {

@@ -8,28 +8,15 @@ import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
 import { updateLeadInDB } from '@/lib/updateLeadInDB';
 
-const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
-
 type EditableLeadProps = {
   lead: Lead;
   isAdmin: boolean;
 };
 
 export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
-  const REJECTION_REASONS = [
-    "Too expensive",
-    "Too low quality",
-    "Too far away",
-  ];
-
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Lead>>({});
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
-  const [pendingStatus, setPendingStatus] = useState<LeadStatus | null>(null);
-  const [saleDate, setSaleDate] = useState<string>(lead.sale_date || '');
-  const [salePrice, setSalePrice] = useState<string>(lead.sale_price?.toString() || '');
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [rejectionNotes, setRejectionNotes] = useState('');
 
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,65 +53,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
     setEditImageFile(null);
   };
 
-  const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStatus = e.target.value as LeadStatus;
-    let updatedData: any = { status: newStatus };
-
-    // Render the sold dialogue
-    if (newStatus === 'sold') {
-      setPendingStatus('sold');
-      setIsEditing(false);
-      return;
-    }
-
-    // Render the rejected dialogue
-    if (newStatus === 'rejected' ) {
-      setPendingStatus('rejected');
-      setIsEditing(false);
-      return;
-    }
-
-    // Since status isn't sold or rejected, we can clear this info
-    updatedData.sale_date = null;
-    updatedData.sale_price = null;
-    updatedData.rejection_reason = '';
-    syncCalendarEvent(lead, lead.status, newStatus);
-    await updateLeadInDB( lead, updatedData )
-  }
-
-  const handleConfirmSold = async () => {
-    if (!saleDate || !salePrice) {
-      alert('Please enter both sale date and sale price.');
-      return;
-    }
-
-    await updateLeadInDB(lead, {
-      status: 'sold',
-      sale_date: saleDate,
-      sale_price: parseFloat(salePrice),
-    });
-
-    await syncCalendarEvent(lead, lead.status, 'sold');
-    setPendingStatus(null);
-  }
-
-  const handleConfirmRejected = async() => {
-    if (!rejectionReason) {
-      alert('Please select a rejection reason.');
-      return;
-    }
-
-    await updateLeadInDB(lead, {
-        status: 'rejected',
-        rejection_reason: rejectionReason + (rejectionNotes ? `: ${rejectionNotes}` : ''),
-    });
-
-    await syncCalendarEvent(lead, lead.status, 'rejected');
-    setPendingStatus(null);
-    setRejectionReason('');
-    setRejectionNotes('');
-  }
-
   return (
     <li className='border p-2 rounded space-y-1 flex flex-row'>
       <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center">
@@ -136,84 +64,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
           className='object-cover object-center'
         />
       </div>
-      {pendingStatus === 'sold' ? (
-        <div className="flex flex-col space-y-2">
-          <label>
-            Sale Date:
-            <input
-              type="date"
-              className="border p-1 ml-2"
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Sale Price:
-            <input
-              type="number"
-              className="border p-1 ml-2"
-              value={salePrice}
-              onChange={(e) => setSalePrice(e.target.value)}
-              required
-            />
-          </label>
-          <div className="flex space-x-2 mt-2">
-            <button
-              className="bg-green-500 text-white px-2 py-1 rounded"
-              onClick={handleConfirmSold}
-            >
-              Confirm Sold
-            </button>
-            <button
-              className="bg-gray-300 px-2 py-1 rounded"
-              onClick={() => setPendingStatus(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : pendingStatus === 'rejected' ? (
-        <div className="flex flex-col space-y-2">
-          <label>
-            Rejection Reason:
-            <select
-              className="border p-1 ml-2"
-              value={rejectionReason}
-              onChange={e => setRejectionReason(e.target.value)}
-              required
-            >
-              <option value="">Select reason</option>
-              {REJECTION_REASONS.map(reason => (
-                <option key={reason} value={reason}>{reason}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Extra Notes (optional):
-            <input
-              type="text"
-              className="border p-1 ml-2"
-              value={rejectionNotes}
-              onChange={e => setRejectionNotes(e.target.value)}
-            />
-          </label>
-          <div className="flex space-x-2 mt-2">
-            <button
-              className="bg-red-500 text-white px-2 py-1 rounded"
-              onClick={handleConfirmRejected}
-            >
-              Confirm Rejection
-            </button>
-            <button
-              className="bg-gray-300 px-2 py-1 rounded"
-              onClick={() => setPendingStatus(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : isEditing ? (
+      { isEditing ? (
         <>
           <input
             className="border p-1"
@@ -295,21 +146,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
             >
               Edit
             </button>
-            {isAdmin && (
-              <>
-                <label>Status:</label>
-                <select
-                  value={lead.status}
-                  onChange={handleStatusChange}
-                  className='cursor-pointer'>
-                  <option value="submitted">Submitted</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="picked up">Picked Up</option>
-                  <option value="sold">Sold</option>
-                </select>
-              </>
-            )}
           </div>
         </>
       )}

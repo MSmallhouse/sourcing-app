@@ -5,18 +5,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
-import type { Lead } from '../types';
+import { type LeadWithProfile } from '../types';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { DeleteLeadButton } from '../DeleteLeadButton';
 import { formatDatestring } from '@/lib/formatDatestring'
-
-type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };
+import { StatusChangeButton } from '../StatusChangeButton';
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+
   const [lead, setLead] = useState<LeadWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // Unwrap params using React.use()
+  const { userId, isAdmin } = useCurrentUser();
+  const router = useRouter();
   const { id } = React.use(params);
 
   useEffect(() => {
@@ -51,7 +52,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         />
       </div>
       <h1 className="text-2xl font-bold mb-4">{lead.title}</h1>
-      <p><span className="font-bold">Status:</span> {lead.status}</p>
+      {isAdmin ? (
+        <StatusChangeButton lead={lead} setLead={setLead} />
+      ) : (
+        <p><span className="font-bold">Status:</span> {lead.status}</p>
+      )}
       <p><span className="font-bold">Purchase Price:</span> ${lead.purchase_price}</p>
       <p><span className="font-bold">Notes:</span> {lead.notes}</p>
       <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
