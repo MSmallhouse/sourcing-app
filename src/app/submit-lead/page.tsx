@@ -117,13 +117,23 @@ export default function SubmitLeadPage() {
           required
         />
         <input
-         className="border p-2 w-full"
-         ref={fileInputRef}
-         type="file"
-         accept="image/*"
-         onChange={(e) => setImage(e.target.files?.[0] || null)}
-         required
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={e => setImage(e.target.files?.[0] || null)}
+          required
         />
+        <button
+          type="button"
+          className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {image ? "Change File" : "Choose File"}
+        </button>
+        <span className="ml-2 text-gray-600">
+          {image ? image.name : "No file chosen"}
+        </span>
         <input
           className="border p-2 w-full"
           placeholder="Purchase Price"
