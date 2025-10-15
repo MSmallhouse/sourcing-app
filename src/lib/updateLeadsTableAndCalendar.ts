@@ -1,7 +1,5 @@
-//import { syncCalendarEvent } from '@/lib/syncCalendarEvent';
-//import { updateLeadInDB } from '@/lib/updateLeadInDB';
 import { supabase } from '@/lib/supabaseClient';
-import { type Lead, type LeadWithProfile, LeadStatus } from '@/app/leads/types';
+import { type Lead, type LeadWithProfile, type UpdatedLeadData, LeadStatus } from '@/app/leads/types';
 
 async function updateLeadInDB(lead: Lead, updatedData: any) {
   const { error } = await supabase
@@ -58,8 +56,8 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           calendarEventId: lead.calendar_event_id,
-          title: editValues.title ?? lead.title,
-          notes: editValues.notes ?? lead.notes,
+          title: editValues.title,
+          notes: editValues.notes,
         }),
       });
       return lead.calendar_event_id;
@@ -72,19 +70,21 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
   } 
 }
 
-export async function updateLeadAndSync({
+export async function updateLeadsTableAndCalendar({
   lead,
   updatedData,
-  newStatus,
-  editValues,
 }: {
   lead: LeadWithProfile;
-  updatedData: any;
-  newStatus: LeadStatus;
-  editValues?: Partial<Lead>;
+  updatedData: UpdatedLeadData;
 }): Promise<LeadWithProfile | null> {
 
-  updatedData.calendar_event_id = await syncCalendarEvent(lead, lead.status, newStatus, editValues);
+  const newStatus = updatedData.status ?? lead.status;
+  const calendarEditValues = {
+    // extract only the info that needs to be updated on the calendar here
+    title: updatedData.title ?? lead.title ?? '',
+    notes: updatedData.notes ?? lead.notes ?? '',
+  }
+  updatedData.calendar_event_id = await syncCalendarEvent(lead, lead.status, newStatus, calendarEditValues);
   await updateLeadInDB(lead, updatedData);
 
   // Refetch the full lead with profile info

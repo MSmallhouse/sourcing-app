@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { LeadStatus, type Lead } from './types';
 import { useState } from 'react';
 import { type LeadWithProfile } from '@/app/leads/types';
-import { updateLeadAndSync } from '@/lib/updateLeadAndSync';
+import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
 
 type StatusChangeButtonProps = {
   lead: LeadWithProfile;
@@ -45,7 +45,7 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
     updatedData.sale_price = null;
     updatedData.rejection_reason = '';
 
-    const freshLead = await updateLeadAndSync({ lead, updatedData, newStatus })
+    const freshLead = await updateLeadsTableAndCalendar({ lead, updatedData })
     if (setLead && freshLead) setLead(freshLead);
   }
 
@@ -55,13 +55,13 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
       return;
     }
 
-    const freshLead = await updateLeadAndSync({
+    const freshLead = await updateLeadsTableAndCalendar({
       lead,
       updatedData: {
         status: 'rejected',
         rejection_reason: rejectionReason + (rejectionNotes ? `: ${rejectionNotes}` : ''),
-      },
-      newStatus: 'rejected' });
+      }
+    });
     if (setLead && freshLead) setLead(freshLead);
 
     setPendingStatus(null);
@@ -75,14 +75,14 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
       return;
     }
 
-    const freshLead = await updateLeadAndSync({
+    const freshLead = await updateLeadsTableAndCalendar({
       lead,
       updatedData: {
         status: 'sold',
         sale_date: saleDate,
         sale_price: parseFloat(salePrice),
-      },
-      newStatus: 'rejected' });
+      }
+    });
     if (setLead && freshLead) setLead(freshLead);
 
     setPendingStatus(null);

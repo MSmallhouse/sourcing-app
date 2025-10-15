@@ -4,6 +4,10 @@ export type LeadStatus = 'submitted' | 'approved' | 'rejected' | 'picked up' | '
 // Lead plus information about who submitted it
 export type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };
 
+// support updates to all columns in lead table other than id
+type UpdatableLeadColumns = Omit<Lead, 'id'>;
+export type UpdatedLeadData = Partial<UpdatableLeadColumns>;
+
 export interface Lead {
   id: string;
   sourcer_id: string;

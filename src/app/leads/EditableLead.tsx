@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { type Lead } from './types';
 import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
-import { updateLeadAndSync } from '@/lib/updateLeadAndSync';
+import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
 
 type EditableLeadProps = {
   lead: Lead;
@@ -36,7 +36,7 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
       newImageUrl = await uploadLeadImage(editImageFile, lead.id);
     }
 
-    await updateLeadAndSync({
+    await updateLeadsTableAndCalendar({
       lead,
       updatedData: {
         title: editValues.title,
@@ -44,8 +44,6 @@ export function EditableLead({ lead, isAdmin }: EditableLeadProps) {
         notes: editValues.notes,
         image_url: newImageUrl,
       },
-      newStatus: lead.status,
-      editValues,
     });
 
     setIsEditing(false);
