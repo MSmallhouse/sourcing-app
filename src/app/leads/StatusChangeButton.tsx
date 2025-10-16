@@ -89,100 +89,100 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
   }
 
   return (
-    <>
-    {pendingStatus === 'rejected' ? (
-      <div className="flex flex-col space-y-2">
-        <label>
-          Rejection Reason:
+    <div className="mb-4">
+      {pendingStatus === 'rejected' ? (
+        <div className="flex flex-col space-y-2">
+          <label>
+            Rejection Reason:
+            <select
+              className="border p-1 ml-2"
+              value={rejectionReason}
+              onChange={e => setRejectionReason(e.target.value)}
+              required
+            >
+              <option value="">Select reason</option>
+              {REJECTION_REASONS.map(reason => (
+                <option key={reason} value={reason}>{reason}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Extra Notes (optional):
+            <input
+              type="text"
+              className="border p-1 ml-2"
+              value={rejectionNotes}
+              onChange={e => setRejectionNotes(e.target.value)}
+            />
+          </label>
+          <div className="flex space-x-2 mt-2">
+            <button
+              className="bg-red-500 text-white px-2 py-1 rounded"
+              onClick={handleConfirmRejected}
+            >
+              Confirm Rejection
+            </button>
+            <button
+              className="bg-gray-300 px-2 py-1 rounded"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : pendingStatus === 'sold' ? (
+        <div className="flex flex-col space-y-2">
+          <label>
+            Sale Date:
+            <input
+              type="date"
+              className="border p-1 ml-2"
+              value={saleDate}
+              onChange={(e) => setSaleDate(e.target.value)}
+              required
+            />
+          </label>
+          <label>
+            Sale Price:
+            <input
+              type="number"
+              className="border p-1 ml-2"
+              value={salePrice}
+              onChange={(e) => setSalePrice(e.target.value)}
+              required
+            />
+          </label>
+          <div className="flex space-x-2 mt-2">
+            <button
+              className="bg-green-500 text-white px-2 py-1 rounded"
+              onClick={handleConfirmSold}
+            >
+              Confirm Sold
+            </button>
+            <button
+              className="bg-gray-300 px-2 py-1 rounded"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        // default Status change UI
+        <>
+          <label>Status:</label>
           <select
-            className="border p-1 ml-2"
-            value={rejectionReason}
-            onChange={e => setRejectionReason(e.target.value)}
-            required
-          >
-            <option value="">Select reason</option>
-            {REJECTION_REASONS.map(reason => (
-              <option key={reason} value={reason}>{reason}</option>
-            ))}
+            value={lead.status}
+            onChange={handleStatusChange}
+            className='cursor-pointer'>
+            <option value="submitted">Submitted</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="picked up">Picked Up</option>
+            <option value="sold">Sold</option>
           </select>
-        </label>
-        <label>
-          Extra Notes (optional):
-          <input
-            type="text"
-            className="border p-1 ml-2"
-            value={rejectionNotes}
-            onChange={e => setRejectionNotes(e.target.value)}
-          />
-        </label>
-        <div className="flex space-x-2 mt-2">
-          <button
-            className="bg-red-500 text-white px-2 py-1 rounded"
-            onClick={handleConfirmRejected}
-          >
-            Confirm Rejection
-          </button>
-          <button
-            className="bg-gray-300 px-2 py-1 rounded"
-            onClick={() => setPendingStatus(null)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ) : pendingStatus === 'sold' ? (
-      <div className="flex flex-col space-y-2">
-        <label>
-          Sale Date:
-          <input
-            type="date"
-            className="border p-1 ml-2"
-            value={saleDate}
-            onChange={(e) => setSaleDate(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Sale Price:
-          <input
-            type="number"
-            className="border p-1 ml-2"
-            value={salePrice}
-            onChange={(e) => setSalePrice(e.target.value)}
-            required
-          />
-        </label>
-        <div className="flex space-x-2 mt-2">
-          <button
-            className="bg-green-500 text-white px-2 py-1 rounded"
-            onClick={handleConfirmSold}
-          >
-            Confirm Sold
-          </button>
-          <button
-            className="bg-gray-300 px-2 py-1 rounded"
-            onClick={() => setPendingStatus(null)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ) : (
-      // default Status change UI
-      <>
-        <label>Status:</label>
-        <select
-          value={lead.status}
-          onChange={handleStatusChange}
-          className='cursor-pointer'>
-          <option value="submitted">Submitted</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="picked up">Picked Up</option>
-          <option value="sold">Sold</option>
-        </select>
-      </>
-    )}
-    </>
+        </>
+      )}
+    </div>
   )
 }
