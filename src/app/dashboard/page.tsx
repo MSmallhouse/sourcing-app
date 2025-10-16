@@ -10,6 +10,7 @@ const STATUSES: LeadStatus[] = [
   'approved',
   'rejected',
   'picked up',
+  'pending sold',
   'sold',
 ]
 

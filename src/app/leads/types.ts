@@ -1,5 +1,5 @@
 // Shared types for leads
-export type LeadStatus = 'submitted' | 'approved' | 'rejected' | 'picked up' | 'sold';
+export type LeadStatus = 'submitted' | 'approved' | 'rejected' | 'picked up' | 'pending sold' | 'sold';
 
 // Lead plus information about who submitted it
 export type LeadWithProfile = Lead & { profiles?: { email: string, first_name: string, last_name: string, } };

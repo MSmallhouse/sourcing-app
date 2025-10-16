@@ -1,6 +1,5 @@
 'use client';
 
-import { supabase } from '@/lib/supabaseClient';
 import { LeadStatus, type Lead } from './types';
 import { useState } from 'react';
 import { type LeadWithProfile } from '@/app/leads/types';
@@ -179,6 +178,7 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="picked up">Picked Up</option>
+            <option value="pending sold">Pending Sold</option>
             <option value="sold">Sold</option>
           </select>
         </>
