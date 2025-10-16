@@ -32,6 +32,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const { id } = React.use(params);
 
+  // grab the lead as well as profile info attached to who submitted it
   useEffect(() => {
     async function fetchLead() {
       const { data, error } = await supabase
@@ -47,6 +48,27 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       setLoading(false);
     }
     fetchLead();
+  
+    // Subscribe to changes for this lead
+    const channel = supabase
+      .channel('lead-single')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'leads',
+          filter: `id=eq.${id}`,
+        },
+        payload => {
+          fetchLead();
+        }
+      )
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const handleEditCancel = () => {
