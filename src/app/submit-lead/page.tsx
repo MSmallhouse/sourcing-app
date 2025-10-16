@@ -38,6 +38,31 @@ export default function SubmitLeadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickupTime || !userId) return;
+
+    // send lead to OpenAI for review
+    const reviewRes = await fetch('api/quote-review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
+        projected_sale_price: projectedSalePrice === '' ? 0 : Number(projectedSalePrice),
+        notes,
+      }),
+    });
+    const { verdict } = await reviewRes.json();
+    if (verdict === 'ERROR') {
+      alert('Invalid response from OpenAI');
+      return;
+    }
+    if (verdict === 'INVALID_VERDICT') {
+      alert('bot didn\'t return ACCEPT or REJECT');
+      return;
+    }
+    if (verdict !== 'ACCEPT') {
+      alert('Lead rejected by Quote Enforcement Bot');
+      return;
+    }
   
     const [startISO, endISO] = pickupTime.split('|');
   
