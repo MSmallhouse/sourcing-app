@@ -1,5 +1,5 @@
 'use client'
-import { LeadCard } from '@/app/leads/LeadCard';
+import { LeadCard } from './LeadCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
 import type { LeadStatus } from '@/app/leads/types'
