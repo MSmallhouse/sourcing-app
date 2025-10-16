@@ -13,6 +13,9 @@ export interface Lead {
   sourcer_id: string;
   title: string;
   purchase_price: number;
+  projected_sale_price: number;
+  address: string;
+  phone: string;
   notes: string;
   created_at: string;
   pickup_start: string;

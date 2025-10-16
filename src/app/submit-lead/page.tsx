@@ -11,6 +11,9 @@ export default function SubmitLeadPage() {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [purchasePrice, setPurchasePrice] = useState('');
+  const [projectedSalePrice, setProjectedSalePrice] = useState('');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [pickupTime, setPickupTime] = useState('');
 
@@ -45,6 +48,9 @@ export default function SubmitLeadPage() {
         sourcer_id: userId,
         title,
         purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
+        projected_sale_price: projectedSalePrice === '' ? 0 : Number(projectedSalePrice),
+        address,
+        phone,
         notes,
         pickup_start: startISO,
         pickup_end: endISO,
@@ -75,6 +81,9 @@ export default function SubmitLeadPage() {
     }
     setImage(null);
     setPurchasePrice('');
+    setProjectedSalePrice('');
+    setAddress('');
+    setPhone('');
     setNotes('');
     setPickupTime('');
 
@@ -87,7 +96,7 @@ export default function SubmitLeadPage() {
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
         <input
           className="border p-2 w-full"
-          placeholder="Title"
+          placeholder="Title*"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -105,25 +114,65 @@ export default function SubmitLeadPage() {
           className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
           onClick={() => fileInputRef.current?.click()}
         >
-          {image ? "Change File" : "Choose File"}
+          {image ? "Change File" : "Image*"}
         </button>
         <span className="ml-2 text-gray-600">
           {image ? image.name : "No file chosen"}
         </span>
         <input
           className="border p-2 w-full"
-          placeholder="Purchase Price"
+          placeholder="Purchase Price*"
           type="number"
           inputMode="numeric"
           pattern="[0-9]*"
           autoComplete="off"
           value={purchasePrice}
           onChange={e => {
+            // Only allow number inputs
             const val = e.target.value;
             if (/^\d*$/.test(val)) {
               setPurchasePrice(val);
             }
           }}
+        />
+        <input
+          className="border p-2 w-full"
+          placeholder="Projected Sale Price*"
+          type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="off"
+          value={projectedSalePrice}
+          onChange={e => {
+            // Only allow number inputs
+            const val = e.target.value;
+            if (/^\d*$/.test(val)) {
+              setProjectedSalePrice(val);
+            }
+          }}
+          required
+        />
+        <input
+          className="border p-2 w-full"
+          placeholder="Address*"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          required
+        />
+        <input
+          className="border p-2 w-full"
+          placeholder="Phone Number*"
+          type="tel"
+          pattern="[\d\s\-\+\(\)]*"
+          value={phone}
+          onChange={e => {
+            // Only allow digits, spaces, dashes, parentheses, and plus characters
+            const val = e.target.value;
+            if (/^[\d\s\-+()]*$/.test(val)) {
+              setPhone(val);
+            }
+          }}
+          maxLength={20}
         />
         <textarea
           className="border p-2 w-full"
