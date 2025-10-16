@@ -8,13 +8,15 @@ export function LeadCard({ lead }: { lead: Lead }) {
   return (
     <li className='border p-2 rounded space-y-1 flex flex-row'>
       <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center relative">
-        <Image
-          src={lead.image_url}
-          alt={lead.title}
-          className='object-cover object-center'
-          fill
-          sizes="100px"
-        />
+        {lead.image_url && (
+          <Image
+            src={lead.image_url}
+            alt={lead.title}
+            className='object-cover object-center'
+            fill
+            sizes="100px"
+          />
+        )}
       </div>
       <div className="flex flex-col">
         <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
