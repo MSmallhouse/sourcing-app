@@ -22,6 +22,13 @@ export default function SubmitLeadPage() {
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [pickupTime, setPickupTime] = useState('');
+  const [botResult, setBotResult] = useState<null | {
+    is_below_high_end: boolean;
+    resale_range: string;
+    reasoning: string;
+  }>(null);
+  const [step, setStep] = useState<'review' | 'submit'>('review');
+  const [loading, setLoading] = useState(false);
 
   const { userId } = useCurrentUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,30 +52,43 @@ export default function SubmitLeadPage() {
     e.preventDefault();
     if (!pickupTime || !userId) return;
 
-    // send lead to OpenAI for review
-    const reviewRes = await fetch('api/quote-review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title,
-        purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
-        projected_sale_price: projectedSalePrice === '' ? 0 : Number(projectedSalePrice),
-        retail_price: retailPrice === '' ? 0 : Number(retailPrice),
-        condition: condition,
-        notes,
-      }),
-    });
-    const { verdict } = await reviewRes.json();
-    if (verdict === 'ERROR') {
-      alert('Invalid response from OpenAI');
-      return;
-    }
-    if (verdict === 'INVALID_VERDICT') {
-      alert('bot didn\'t return ACCEPT or REJECT');
-      return;
-    }
-    if (verdict !== 'ACCEPT') {
-      alert('Lead rejected by Quote Enforcement Bot');
+    if (step === 'review') {
+      setLoading(true);
+      // send lead to OpenAI for review
+      const reviewRes = await fetch('api/quote-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
+          retail_price: retailPrice === '' ? 0 : Number(retailPrice),
+          condition: condition,
+          notes,
+        }),
+      });
+      const reviewJson = await reviewRes.json();
+  
+      let verdictObj = reviewJson.verdict;
+      if (typeof verdictObj === 'string') {
+        const fixedJson = verdictObj
+          .replace(/\bTRUE\b/g, 'true')
+          .replace(/\bFALSE\b/g, 'false');
+        try {
+          verdictObj = JSON.parse(fixedJson);
+        } catch (err) {
+          alert('Quote Enforcement Bot returned invalid JSON.');
+          setLoading(false);
+          return;
+        }
+      }
+  
+      setBotResult({
+        is_below_high_end: verdictObj.is_below_high_end ?? verdictObj.IS_BELOW_HIGH_END,
+        resale_range: verdictObj.resale_range || verdictObj.RESALE_RANGE,
+        reasoning: verdictObj.reasoning || verdictObj.REASONING,
+      });
+      setStep('submit');
+      setLoading(false);
       return;
     }
   
@@ -254,10 +274,28 @@ export default function SubmitLeadPage() {
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"
+          disabled={loading}
         >
-          Submit
+          {step === 'review'
+            ? loading ? 'Reviewing...' : 'Submit for Quote Review'
+            : 'Submit Lead'}
         </button>
       </form>
+      {botResult && (
+        <div
+          className={`p-4 mb-4 rounded text-white ${
+            botResult.is_below_high_end ? 'bg-green-500' : 'bg-red-500'
+          }`}
+        >
+          <div className="font-bold text-lg">
+            {botResult.is_below_high_end ? 'Accepted by Quote Bot' : 'Rejected by Quote Bot'}
+          </div>
+          <div className="mt-2">
+            <span className="font-semibold">Suggested Offer Range:</span> {botResult.resale_range}
+          </div>
+          <div className="mt-1 italic">{botResult.reasoning}</div>
+        </div>
+      )}
     </div>
   );
 }
