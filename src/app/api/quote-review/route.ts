@@ -3,7 +3,7 @@ import { OpenAI } from 'openai';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { title, purchase_price, projected_sale_price, notes } = body;
+  const { title, purchase_price, projected_sale_price, retail_price, condition, notes } = body;
 
   // Call OpenAI API (replace with your prompt and model)
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const response = await openai.chat.completions.create({
     model: "gpt-4",
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 50,
+    max_completion_tokens: 10,
   });
 
   if (!response.choices || !response.choices[0].message.content) {

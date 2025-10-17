@@ -5,6 +5,10 @@ import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRouter } from 'next/navigation'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
+import { setRequestMeta } from 'next/dist/server/request-meta';
+import { retail } from 'googleapis/build/src/apis/retail';
+
+const CONDITION_OPTIONS = ['Like New', 'Good', 'Fair'];
 
 export default function SubmitLeadPage() {
   const router = useRouter()
@@ -12,6 +16,8 @@ export default function SubmitLeadPage() {
   const [image, setImage] = useState<File | null>(null);
   const [purchasePrice, setPurchasePrice] = useState('');
   const [projectedSalePrice, setProjectedSalePrice] = useState('');
+  const [retailPrice, setretailPrice] = useState('');
+  const [condition, setCondition] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -47,6 +53,8 @@ export default function SubmitLeadPage() {
         title,
         purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
         projected_sale_price: projectedSalePrice === '' ? 0 : Number(projectedSalePrice),
+        retail_price: retailPrice === '' ? 0 : Number(retailPrice),
+        condition: condition,
         notes,
       }),
     });
@@ -107,6 +115,8 @@ export default function SubmitLeadPage() {
     setImage(null);
     setPurchasePrice('');
     setProjectedSalePrice('');
+    setretailPrice('');
+    setCondition('');
     setAddress('');
     setPhone('');
     setNotes('');
@@ -177,6 +187,38 @@ export default function SubmitLeadPage() {
           }}
           required
         />
+        <input
+          className="border p-2 w-full"
+          placeholder="Approx. Original Retail Price*"
+          type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="off"
+          value={retailPrice}
+          onChange={e => {
+            // Only allow number inputs
+            const val = e.target.value;
+            if (/^\d*$/.test(val)) {
+              setretailPrice(val);
+            }
+          }}
+          required
+        />
+        <select
+          className="border p-2 w-full"
+          value={condition}
+          onChange={e => setCondition(e.target.value)}
+          required
+        >
+          <option value="" disabled>
+            Condition*
+          </option>
+          {CONDITION_OPTIONS.map(opt => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
         <input
           className="border p-2 w-full"
           placeholder="Address*"

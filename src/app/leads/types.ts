@@ -14,6 +14,8 @@ export interface Lead {
   title: string;
   purchase_price: number;
   projected_sale_price: number;
+  retail_price?: number;
+  condition?: string;
   address: string;
   phone: string;
   notes: string;
