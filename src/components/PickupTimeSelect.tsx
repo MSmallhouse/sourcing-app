@@ -35,14 +35,8 @@ export function PickupTimeSelect({ value, onChange, lead }: PickupTimeSelectProp
     return () => clearInterval(interval);
   }, []);
 
-  // If lead has a pickup time, show it as the first option
-  let hasPickupTime = false;
-  let pickupLabel = '';
-  if (lead && lead.pickup_start && lead.pickup_end) {
-    const pickupValue = `${lead.pickup_start}|${lead.pickup_end}`;
-    hasPickupTime = value === pickupValue;
-    pickupLabel = formatSlotLabel(lead.pickup_start, lead.pickup_end);
-  }
+  // If in edit mode, do not show the empty option
+  const isEditMode = !!lead;
 
   return (
     <select
@@ -50,16 +44,17 @@ export function PickupTimeSelect({ value, onChange, lead }: PickupTimeSelectProp
       value={value}
       onChange={e => onChange(e.target.value)}
       required
+      disabled={availableSlots.length === 0}
     >
-      {!value || !hasPickupTime ? (
-        <option value="">Select pickup time*</option>
+      {availableSlots.length === 0 ? (
+        <option value="">Loading...</option>
       ) : (
-        <option value={value}>{pickupLabel}</option>
+        !isEditMode && <option value="">Select pickup time*</option>
       )}
       {availableSlots.map((slot, idx) => {
         const slotValue = `${slot.start}|${slot.end}`;
         return (
-          <option key={idx} value={slotValue}>
+          <option key={slotValue} value={slotValue}>
             {formatSlotLabel(slot.start, slot.end)}
           </option>
         );
