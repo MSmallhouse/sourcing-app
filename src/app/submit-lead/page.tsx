@@ -15,7 +15,6 @@ export default function SubmitLeadPage() {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [purchasePrice, setPurchasePrice] = useState('');
-  const [projectedSalePrice, setProjectedSalePrice] = useState('');
   const [retailPrice, setretailPrice] = useState('');
   const [condition, setCondition] = useState('');
   const [address, setAddress] = useState('');
@@ -101,7 +100,6 @@ export default function SubmitLeadPage() {
         sourcer_id: userId,
         title,
         purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
-        projected_sale_price: projectedSalePrice === '' ? 0 : Number(projectedSalePrice),
         address,
         phone,
         notes,
@@ -134,7 +132,6 @@ export default function SubmitLeadPage() {
     }
     setImage(null);
     setPurchasePrice('');
-    setProjectedSalePrice('');
     setretailPrice('');
     setCondition('');
     setAddress('');
@@ -189,23 +186,6 @@ export default function SubmitLeadPage() {
               setPurchasePrice(val);
             }
           }}
-        />
-        <input
-          className="border p-2 w-full"
-          placeholder="Projected Sale Price*"
-          type="number"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          value={projectedSalePrice}
-          onChange={e => {
-            // Only allow number inputs
-            const val = e.target.value;
-            if (/^\d*$/.test(val)) {
-              setProjectedSalePrice(val);
-            }
-          }}
-          required
         />
         <input
           className="border p-2 w-full"
