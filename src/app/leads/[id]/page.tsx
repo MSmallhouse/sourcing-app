@@ -14,10 +14,9 @@ import { formatDatestring } from '@/lib/formatDatestring'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { StatusChangeButton } from '../StatusChangeButton';
 
-type LeadEditValues = Partial<Omit<Lead, 'purchase_price' | 'projected_sale_price'>>
+type LeadEditValues = Partial<Omit<Lead, 'purchase_price' >>
   & {
     purchase_price?: string;
-    projected_sale_price?: string;
   };
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -97,10 +96,6 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           editValues.purchase_price === undefined
             ? 0
             : Number(editValues.purchase_price),
-        projected_sale_price:
-          editValues.projected_sale_price === undefined
-            ? 0
-            : Number(editValues.projected_sale_price),
         address: editValues.address,
         phone: editValues.phone,
         notes: editValues.notes,
@@ -197,28 +192,6 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           />
         ) : (
           <>${lead.purchase_price}</>
-        )}
-      </p>
-
-      <p>
-        <span className="font-bold">Projected Sale Price: </span>
-        {isEditing ? (
-          <input
-            className="border p-1"
-            type="number"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={editValues.projected_sale_price ?? ''}
-            onChange={e => {
-              // Only allow numbers or empty string
-              const val = e.target.value;
-              if (/^\d*$/.test(val)) {
-                setEditValues(prev => ({ ...prev, projected_sale_price: val }));
-              }
-            }}
-          />
-        ) : (
-          <>${lead.projected_sale_price}</>
         )}
       </p>
 
@@ -335,7 +308,6 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 setEditValues({
                   ...lead,
                   purchase_price: lead.purchase_price?.toString() ?? '',
-                  projected_sale_price: lead.projected_sale_price?.toString() ?? '',
                 });
               }}
             >
