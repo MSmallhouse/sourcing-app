@@ -5,8 +5,6 @@ import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRouter } from 'next/navigation'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
-import { setRequestMeta } from 'next/dist/server/request-meta';
-import { retail } from 'googleapis/build/src/apis/retail';
 
 const CONDITION_OPTIONS = ['Like New', 'Good', 'Fair'];
 
@@ -91,9 +89,8 @@ export default function SubmitLeadPage() {
       return;
     }
   
-    const [startISO, endISO] = pickupTime.split('|');
-  
     // Insert the lead into Supabase
+    const [startISO, endISO] = pickupTime.split('|');
     const { data: lead, error } = await supabase
       .from('leads')
       .insert({
@@ -146,111 +143,121 @@ export default function SubmitLeadPage() {
     <div className="p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">Submit a Lead</h1>
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-        <input
-          className="border p-2 w-full"
-          placeholder="Title*"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={e => setImage(e.target.files?.[0] || null)}
-          required
-        />
-        <button
-          type="button"
-          className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {image ? "Change File" : "Image*"}
-        </button>
-        <span className="ml-2 text-gray-600">
-          {image ? image.name : "No file chosen"}
-        </span>
-        <input
-          className="border p-2 w-full"
-          placeholder="Purchase Price*"
-          type="number"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          value={purchasePrice}
-          onChange={e => {
-            // Only allow number inputs
-            const val = e.target.value;
-            if (/^\d*$/.test(val)) {
-              setPurchasePrice(val);
-            }
-          }}
-        />
-        <input
-          className="border p-2 w-full"
-          placeholder="Approx. Original Retail Price*"
-          type="number"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          value={retailPrice}
-          onChange={e => {
-            // Only allow number inputs
-            const val = e.target.value;
-            if (/^\d*$/.test(val)) {
-              setretailPrice(val);
-            }
-          }}
-          required
-        />
-        <select
-          className="border p-2 w-full"
-          value={condition}
-          onChange={e => setCondition(e.target.value)}
-          required
-        >
-          <option value="" disabled>
-            Condition*
-          </option>
-          {CONDITION_OPTIONS.map(opt => (
-            <option key={opt} value={opt}>
-              {opt}
+        <div className={`space-y-4 ${step === 'submit' ? 'hidden' : ''}`}>
+          <input
+            className="border p-2 w-full"
+            placeholder="Title*"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={e => setImage(e.target.files?.[0] || null)}
+            required
+          />
+          <button
+            type="button"
+            className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {image ? "Change File" : "Image*"}
+          </button>
+          <span className="ml-2 text-gray-600">
+            {image ? image.name : "No file chosen"}
+          </span>
+          <input
+            className="border p-2 w-full"
+            placeholder="Purchase Price*"
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={purchasePrice}
+            onChange={e => {
+              // Only allow number inputs
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setPurchasePrice(val);
+              }
+            }}
+          />
+          <input
+            className="border p-2 w-full"
+            placeholder="Approx. Original Retail Price*"
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={retailPrice}
+            onChange={e => {
+              // Only allow number inputs
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {
+                setretailPrice(val);
+              }
+            }}
+            required
+          />
+          <select
+            className="border p-2 w-full"
+            value={condition}
+            onChange={e => setCondition(e.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Condition*
             </option>
-          ))}
-        </select>
-        <input
-          className="border p-2 w-full"
-          placeholder="Address*"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
-        />
-        <input
-          className="border p-2 w-full"
-          placeholder="Phone Number*"
-          type="tel"
-          pattern="[\d\s\-\+\(\)]*"
-          value={phone}
-          onChange={e => {
-            // Only allow digits, spaces, dashes, parentheses, and plus characters
-            const val = e.target.value;
-            if (/^[\d\s\-+()]*$/.test(val)) {
-              setPhone(val);
-            }
-          }}
-          maxLength={20}
-        />
-        <textarea
-          className="border p-2 w-full"
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-        <PickupTimeSelect
-          value={pickupTime}
-          onChange={setPickupTime}
-        />
+            {CONDITION_OPTIONS.map(opt => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <input
+            className="border p-2 w-full"
+            placeholder="Address*"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+          <input
+            className="border p-2 w-full"
+            placeholder="Phone Number*"
+            type="tel"
+            pattern="[\d\s\-\+\(\)]*"
+            value={phone}
+            onChange={e => {
+              // Only allow digits, spaces, dashes, parentheses, and plus characters
+              const val = e.target.value;
+              if (/^[\d\s\-+()]*$/.test(val)) {
+                setPhone(val);
+              }
+            }}
+            maxLength={20}
+          />
+          <textarea
+            className="border p-2 w-full"
+            placeholder="Notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+          <PickupTimeSelect
+            value={pickupTime}
+            onChange={setPickupTime}
+          />
+        </div>
+        {step === 'submit' && (
+          <button
+            onClick={() => setStep('review')}
+            className="me-4 px-4 py-2 bg-yellow-500 rounded"
+          >
+            Back to Form
+          </button>
+        )}
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -261,7 +268,7 @@ export default function SubmitLeadPage() {
             : 'Submit Lead'}
         </button>
       </form>
-      {botResult && (
+      {botResult && step === 'submit' && (
         <div
           className={`p-4 mb-4 rounded text-white ${
             botResult.is_below_high_end ? 'bg-green-500' : 'bg-red-500'
