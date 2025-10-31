@@ -31,8 +31,6 @@ export function PickupTimeSelect({ value, onChange, lead }: PickupTimeSelectProp
       }
     }
     fetchSlots();
-    const interval = setInterval(fetchSlots, 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   // If in edit mode, do not show the empty option
