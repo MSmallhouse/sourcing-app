@@ -6,13 +6,13 @@ import { type Lead } from '@/app/leads/types';
 
 export function LeadCard({ lead }: { lead: Lead }) {
   return (
-    <li className='border p-2 rounded space-y-1 flex flex-row'>
+    <li className='border border-muted p-2 rounded space-y-1 flex flex-row'>
       <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center relative">
         {lead.image_url && (
           <Image
             src={lead.image_url}
             alt={lead.title}
-            className='object-cover object-center'
+            className='object-cover object-center rounded'
             fill
             sizes="100px"
           />
@@ -28,7 +28,7 @@ export function LeadCard({ lead }: { lead: Lead }) {
         <Link href={`/leads/${lead.id}`} className='hover:underline flex flex-col'>
           <span>Notes: {lead.notes}</span>
         </Link>
-        <span className="text-gray-500 text-sm">
+        <span className="color-muted text-sm">
           {new Date(lead.created_at).toLocaleString()}
         </span>
         {/* Show sale info if sold */}
