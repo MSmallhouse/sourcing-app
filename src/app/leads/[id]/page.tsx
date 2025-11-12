@@ -13,6 +13,7 @@ import { uploadLeadImage, deleteLeadImage } from '@/lib/supabaseImageHelpers';
 import { formatDatestring } from '@/lib/formatDatestring'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { StatusChangeButton } from '../StatusChangeButton';
+import { Button } from "@/components/ui/button"
 
 type LeadEditValues = Partial<Omit<Lead, 'purchase_price' >>
   & {
@@ -140,13 +141,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             id="edit-image-input"
           />
           <label htmlFor="edit-image-input">
-            <button
-              type="button"
-              className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+            <Button
+              variant="outline"
               onClick={() => editFileInputRef.current?.click()}
             >
-              {"Change Image File"}
-            </button>
+              Change Image File
+            </Button>
           </label>
           <span className="ml-2 text-gray-600">
             {editImageFile ? editImageFile.name : ''}
@@ -285,24 +285,24 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         {isEditing ? (
           <>
             <div className="flex space-x-2 mt-2">
-              <button
-                className="bg-green-500 text-white px-2 py-1 rounded"
+              <Button
+                variant="outline"
                 onClick={handleEditSave}
               >
                 Save
-              </button>
-              <button
-                className="bg-gray-300 px-2 py-1 rounded"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleEditCancel}
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </>
         ) : (
           <div className="flex space-x-2 mt-2">
-            <button
-              className="bg-yellow-500 text-white px-2 py-1 rounded cursor-pointer"
+            <Button
+              variant="outline"
               onClick={() => {
                 setIsEditing(true);
                 setEditValues({
@@ -312,13 +312,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               }}
             >
               Edit
-            </button>
+            </Button>
             <DeleteLeadButton lead={lead} />
           </div>
         )}
-        <button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.back()}>
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+        >
           Back
-        </button>
+        </Button>
       </div>
   </div>
   );

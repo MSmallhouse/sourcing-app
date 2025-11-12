@@ -16,6 +16,8 @@ import { supabase } from '@/lib/supabaseClient';
 import {useRouter } from 'next/navigation'
 import type { Lead } from './types';
 import { deleteLeadImage } from '@/lib/supabaseImageHelpers';
+import { Button } from "@/components/ui/button"
+
 
 export function DeleteLeadButton({ lead }: { lead: Lead }) {
   const router = useRouter();
@@ -60,11 +62,11 @@ export function DeleteLeadButton({ lead }: { lead: Lead }) {
   };
 
   return (
-    <button
+    <Button
       onClick={handleDelete}
-      className="bg-red-500 text-white px-2 py-1 rounded cursor-pointer"
+      variant="destructive"
     >
       Delete
-    </button>
+    </Button>
   );
 }

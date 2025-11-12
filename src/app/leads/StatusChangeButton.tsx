@@ -4,6 +4,7 @@ import { LeadStatus, type Lead } from './types';
 import { useState } from 'react';
 import { type LeadWithProfile } from '@/app/leads/types';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
+import { Button } from "@/components/ui/button"
 
 type StatusChangeButtonProps = {
   lead: LeadWithProfile;
@@ -115,18 +116,18 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
             />
           </label>
           <div className="flex space-x-2 mt-2">
-            <button
-              className="bg-red-500 text-white px-2 py-1 rounded"
+            <Button
+              variant="destructive"
               onClick={handleConfirmRejected}
             >
               Confirm Rejection
-            </button>
-            <button
-              className="bg-gray-300 px-2 py-1 rounded"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setPendingStatus(null)}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       ) : pendingStatus === 'sold' ? (
@@ -152,18 +153,18 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
             />
           </label>
           <div className="flex space-x-2 mt-2">
-            <button
-              className="bg-green-500 text-white px-2 py-1 rounded"
+            <Button
+              variant="outline"
               onClick={handleConfirmSold}
             >
               Confirm Sold
-            </button>
-            <button
-              className="bg-gray-300 px-2 py-1 rounded"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setPendingStatus(null)}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
