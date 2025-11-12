@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -51,12 +52,12 @@ export default function LoginPage() {
             className="w-full border rounded-lg p-2"
             required
           />
-          <button
+          <Button
+            variant="outline"
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
           >
             Send Magic Link
-          </button>
+          </Button>
         </form>
         {message && (
           <p className="mt-4 text-sm text-gray-600">{message}</p>

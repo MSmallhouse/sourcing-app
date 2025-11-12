@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
 import type { LeadStatus } from '@/app/leads/types'
 import { supabase } from '@/lib/supabaseClient';
+import { Button } from "@/components/ui/button"
 
 const STATUSES: LeadStatus[] = [
   'submitted',
@@ -44,11 +45,12 @@ export default function dashboardPage() {
           )}
         </div>
       ))}
-      <button
+      <Button
+        variant="destructive"
         onClick={handleLogout}
-        className='bg-red-500 p-3 mt-4 max-w-lg mx-auto cursor-pointer'>
+      >
         Log Out
-      </button>
+      </Button>
     </div>
   )
 }

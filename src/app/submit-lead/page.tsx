@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRouter } from 'next/navigation'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
+import { Button } from "@/components/ui/button"
 
 const CONDITION_OPTIONS = ['Like New', 'Good', 'Fair'];
 
@@ -159,13 +160,12 @@ export default function SubmitLeadPage() {
             onChange={e => setImage(e.target.files?.[0] || null)}
             required
           />
-          <button
-            type="button"
-            className="border px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+          <Button
+            variant="outline"
             onClick={() => fileInputRef.current?.click()}
           >
             {image ? "Change File" : "Image*"}
-          </button>
+          </Button>
           <span className="ml-2 text-gray-600">
             {image ? image.name : "No file chosen"}
           </span>
@@ -251,22 +251,22 @@ export default function SubmitLeadPage() {
           />
         </div>
         {step === 'submit' && (
-          <button
+          <Button
+            variant="secondary"
             onClick={() => setStep('review')}
-            className="me-4 px-4 py-2 bg-yellow-500 rounded"
           >
             Back to Form
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="outline"
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
           disabled={loading}
         >
           {step === 'review'
             ? loading ? 'Reviewing...' : 'Submit for Quote Review'
             : 'Submit Lead'}
-        </button>
+        </Button>
       </form>
       {botResult && step === 'submit' && (
         <div

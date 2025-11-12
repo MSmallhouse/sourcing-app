@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
+import { Button } from "@/components/ui/button"
 
 export default function CompleteProfile() {
   const router = useRouter()
@@ -103,13 +104,13 @@ export default function CompleteProfile() {
           required
         />
         {error && <p className="text-red-600">{error}</p>}
-        <button
+        <Button
+          variant="outline"
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg"
           disabled={saving}
         >
           {saving ? 'Saving...' : 'Save'}
-        </button>
+        </Button>
       </form>
     </div>
   )
