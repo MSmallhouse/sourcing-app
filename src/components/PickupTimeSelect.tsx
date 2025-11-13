@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Lead } from '@/app/leads/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type Slot = { start: string; end: string };
 
@@ -14,7 +21,7 @@ function formatSlotLabel(startStr: string, endStr: string) {
   const end = new Date(endStr);
   const day = start.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
   const time = `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
-  return `${day}, ${time}`;
+  return `${day}, ${time}`.trim();
 }
 
 export function PickupTimeSelect({ value, onChange, lead }: PickupTimeSelectProps) {
@@ -36,27 +43,43 @@ export function PickupTimeSelect({ value, onChange, lead }: PickupTimeSelectProp
   // If in edit mode, do not show the empty option
   const isEditMode = !!lead;
 
+  // Check if value exists in availableSlots
+  const slotExists = availableSlots.some(
+    slot => `${slot.start}|${slot.end}` === value
+  );
+
+  // If not, add the value as a temporary slot
+  const slotsToShow = slotExists || !value
+    ? availableSlots
+    : [{ start: value.split('|')[0], end: value.split('|')[1] }, ...availableSlots];
+
   return (
-    <select
-      className="border p-2 w-full mb-4"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      required
+    <Select
+      value={availableSlots.length === 0 ? "" : value}
+      onValueChange={value => onChange(value)}
       disabled={availableSlots.length === 0}
     >
-      {availableSlots.length === 0 ? (
-        <option value="">Loading...</option>
-      ) : (
-        !isEditMode && <option value="">Select pickup time*</option>
-      )}
-      {availableSlots.map((slot, idx) => {
-        const slotValue = `${slot.start}|${slot.end}`;
-        return (
-          <option key={slotValue} value={slotValue}>
-            {formatSlotLabel(slot.start, slot.end)}
-          </option>
-        );
-      })}
-    </select>
+      <SelectTrigger className="w-full">
+        <SelectValue
+          placeholder={
+            availableSlots.length === 0
+              ? "Loading..."
+              : isEditMode && value
+                ? formatSlotLabel(value.split('|')[0], value.split('|')[1])
+                : "Select pickup time*"
+          }
+        />
+      </SelectTrigger>
+      <SelectContent>
+        {slotsToShow.map((slot) => {
+          const slotValue = `${slot.start}|${slot.end}`;
+          return (
+            <SelectItem key={slotValue} value={slotValue}>
+              {formatSlotLabel(slot.start, slot.end)}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 }

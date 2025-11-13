@@ -6,6 +6,15 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useRouter } from 'next/navigation'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const CONDITION_OPTIONS = ['Like New', 'Good', 'Fair'];
 
@@ -145,8 +154,7 @@ export default function SubmitLeadPage() {
       <h1 className="text-2xl font-bold mb-4">Submit a Lead</h1>
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
         <div className={`space-y-4 ${step === 'submit' ? 'hidden' : ''}`}>
-          <input
-            className="border p-2 w-full"
+          <Input
             placeholder="Title*"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -169,8 +177,7 @@ export default function SubmitLeadPage() {
           <span className="ml-2 text-gray-600">
             {image ? image.name : "No file chosen"}
           </span>
-          <input
-            className="border p-2 w-full"
+          <Input
             placeholder="Purchase Price*"
             type="number"
             inputMode="numeric"
@@ -185,8 +192,7 @@ export default function SubmitLeadPage() {
               }
             }}
           />
-          <input
-            className="border p-2 w-full"
+          <Input
             placeholder="Approx. Original Retail Price*"
             type="number"
             inputMode="numeric"
@@ -202,30 +208,27 @@ export default function SubmitLeadPage() {
             }}
             required
           />
-          <select
-            className="border p-2 w-full"
+          <Select
             value={condition}
-            onChange={e => setCondition(e.target.value)}
+            onValueChange={value => setCondition(value)}
             required
           >
-            <option value="" disabled>
-              Condition*
-            </option>
-            {CONDITION_OPTIONS.map(opt => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-          <input
-            className="border p-2 w-full"
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Condition*" />
+            </SelectTrigger>
+            <SelectContent>
+              {CONDITION_OPTIONS.map(option => (
+                <SelectItem value={option} key={option}>{option}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
             placeholder="Address*"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             required
           />
-          <input
-            className="border p-2 w-full"
+          <Input
             placeholder="Phone Number*"
             type="tel"
             pattern="[\d\s\-\+\(\)]*"
@@ -239,8 +242,7 @@ export default function SubmitLeadPage() {
             }}
             maxLength={20}
           />
-          <textarea
-            className="border p-2 w-full"
+          <Textarea
             placeholder="Notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
