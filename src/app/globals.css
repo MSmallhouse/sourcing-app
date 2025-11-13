@@ -138,3 +138,12 @@ p {
     @apply bg-background text-foreground;
   }
 }
+
+/*Source - https://stackoverflow.com/questions/13107118/how-to-remove-the-arrows-from-inputtype-number-in-opera*/
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
