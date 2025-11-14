@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 
 export default function AccountPage() {
   const { userId, isAdmin } = useCurrentUser();
@@ -16,6 +17,7 @@ export default function AccountPage() {
   const [totalApproved, setTotalApproved] = useState<number | null>(null);
   const [totalRejected, settotalRejected] = useState<number | null>(null);
   const [totalSold, settotalSold] = useState<number | null>(null);
+  const [totalCommission, setTotalCommission]  = useState<number | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -54,6 +56,24 @@ export default function AccountPage() {
     if (!error) setter(count ?? 0);
   }
 
+  const fetchTotalCommission = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("leads")
+      .select("sale_price, purchase_price")
+      .eq("sourcer_id", userId)
+      .eq("status", "sold");
+    if (!error && data) {
+      let total = 0;
+      for (const lead of data) {
+        const profit = (lead.sale_price ?? 0) - (lead.purchase_price ?? 0);
+        if (profit > 0) {
+          total += profit * SOURCER_COMMISSION_RATE;
+        }
+      }
+      setTotalCommission(total);
+    }
+  };
+
   useEffect(() => {
     if (!userId) return;
     fetchUserProfile(userId);
@@ -65,6 +85,7 @@ export default function AccountPage() {
     fetchSubmissionCountByStatus(userId, ['approved', 'picked up', 'pending sold', 'sold'], setTotalApproved);
     fetchSubmissionCountByStatus(userId, 'rejected', settotalRejected);
     fetchSubmissionCountByStatus(userId, 'sold', settotalSold);
+    fetchTotalCommission(userId);
   }, [userId]);
 
   if (!userId) {
@@ -108,6 +129,14 @@ export default function AccountPage() {
             <div>
               <span className="font-semibold">Sold Count:</span>{" "}
                 {totalSold!== null ? totalSold: "0"}
+            </div>
+            <div>
+              <span className="font-semibold">Total Commission:</span>{" $"}
+                {totalCommission !== null ? totalCommission: "0"}
+            </div>
+            <div>
+              <span className="font-semibold">Unpaid Commission:</span>{" "}
+                {"-"}
             </div>
           </div>
         </CardContent>
