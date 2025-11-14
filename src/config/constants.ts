@@ -1,0 +1,1 @@
+export const SOURCER_COMMISSION_RATE = 0.2;
