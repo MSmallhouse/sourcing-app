@@ -2,9 +2,9 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useLeads } from '@/hooks/useLeads';
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 
 export default function AccountPage() {
@@ -15,13 +15,23 @@ export default function AccountPage() {
     email: string;
     stripe_account_id: string;
   } | null>(null);
-  const [totalSubmissions, setTotalSubmissions] = useState<number | null>(null);
-  const [totalApproved, setTotalApproved] = useState<number | null>(null);
-  const [totalRejected, settotalRejected] = useState<number | null>(null);
-  const [totalSold, settotalSold] = useState<number | null>(null);
-  const [totalCommission, setTotalCommission]  = useState<number | null>(null);
   const [stripeLoading, setStripeLoading] = useState(false);
   const [isStripeonboarded, setIsStripeOnboarded] = useState<boolean | null>(null);
+
+  const { leads, loading: leadsLoading } = useLeads(userId, isAdmin);
+
+  const totalSubmissions = leads.length;
+  const totalApproved = leads.filter(l =>
+    ["approved", "picked up", "pending sold", "sold"].includes(l.status)
+  ).length;
+  const totalRejected = leads.filter(l => l.status === "rejected").length;
+  const totalSold = leads.filter(l => l.status === "sold").length;
+  const totalCommission = leads
+    .filter(l => l.commission_amount ?? 0)
+    .reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
+  const unpaidCommission = leads
+    .filter(l => !l.commission_paid && (l.commission_amount ?? 0))
+    .reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -30,52 +40,6 @@ export default function AccountPage() {
       .eq("id", userId)
       .single();
     if (!error && data) setProfile(data);
-  };
-
-  const fetchTotalSubmissionsCount = async (userId: string) => {
-    const { count, error } = await supabase
-      .from("leads")
-      .select("id", { count: "exact", head: true })
-      .eq("sourcer_id", userId);
-    if (!error) setTotalSubmissions(count ?? 0);
-  };
-
-  const fetchSubmissionCountByStatus = async (
-    userId: string,
-    status: string | string[],
-    setter: React.Dispatch<React.SetStateAction<number | null>>
-  ) => {
-    let query = supabase
-    .from("leads")
-    .select("id", { count: "exact", head: true })
-    .eq("sourcer_id", userId);
-
-    if (Array.isArray(status)) {
-      query = query.in("status", status);
-    } else {
-      query = query.eq("status", status);
-    }
-
-    const { count, error } = await query;
-    if (!error) setter(count ?? 0);
-  }
-
-  const fetchTotalCommission = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("leads")
-      .select("sale_price, purchase_price")
-      .eq("sourcer_id", userId)
-      .eq("status", "sold");
-    if (!error && data) {
-      let total = 0;
-      for (const lead of data) {
-        const profit = (lead.sale_price ?? 0) - (lead.purchase_price ?? 0);
-        if (profit > 0) {
-          total += profit * SOURCER_COMMISSION_RATE;
-        }
-      }
-      setTotalCommission(total);
-    }
   };
 
   const handleConnectStripe = async () => {
@@ -106,15 +70,6 @@ export default function AccountPage() {
   useEffect(() => {
     if (!userId) return;
     fetchUserProfile(userId);
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-    fetchTotalSubmissionsCount(userId);
-    fetchSubmissionCountByStatus(userId, ['approved', 'picked up', 'pending sold', 'sold'], setTotalApproved);
-    fetchSubmissionCountByStatus(userId, 'rejected', settotalRejected);
-    fetchSubmissionCountByStatus(userId, 'sold', settotalSold);
-    fetchTotalCommission(userId);
   }, [userId]);
 
   useEffect(() => {
@@ -155,23 +110,23 @@ export default function AccountPage() {
             </div>
             <div>
               <span className="font-semibold">Approved Count:</span>{" "}
-                {totalApproved !== null ? totalApproved: "0"}
+                {totalApproved !== null ? totalApproved : "0"}
             </div>
             <div>
               <span className="font-semibold">Rejected Count:</span>{" "}
-                {totalRejected!== null ? totalRejected: "0"}
+                {totalRejected!== null ? totalRejected : "0"}
             </div>
             <div>
               <span className="font-semibold">Sold Count:</span>{" "}
-                {totalSold!== null ? totalSold: "0"}
+                {totalSold!== null ? totalSold : "0"}
             </div>
             <div>
               <span className="font-semibold">Total Commission:</span>{" $"}
-                {totalCommission !== null ? totalCommission: "0"}
+                {totalCommission !== null ? totalCommission.toFixed(2) : "0"}
             </div>
             <div>
-              <span className="font-semibold">Unpaid Commission:</span>{" "}
-                {"-"}
+              <span className="font-semibold">Unpaid Commission:</span>{" $"}
+                {unpaidCommission !== null ? unpaidCommission.toFixed(2) : "0"}
             </div>
             <div>
               <span className="font-semibold">Stripe Account Id:</span>{" "}
