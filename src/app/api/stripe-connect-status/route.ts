@@ -13,9 +13,9 @@ export async function POST(req: Request) {
   const account = await stripe.accounts.retrieve(stripeAccountId);
 
   // Stripe recommends checking these requirements for onboarding completion
-  const onboarded =
+  const isOnboarded =
     account.details_submitted &&
     !account.requirements?.currently_due?.length;
 
-  return NextResponse.json({ onboarded, account });
+  return NextResponse.json({ isOnboarded, account });
 }
