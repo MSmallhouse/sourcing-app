@@ -5,6 +5,8 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { SOURCER_COMMISSION_RATE } from "@/config/constants";
+import { Button } from "@/components/ui/button";
+import { handleClientScriptLoad } from "next/script";
 
 export default function AccountPage() {
   const { userId, isAdmin } = useCurrentUser();
@@ -12,17 +14,20 @@ export default function AccountPage() {
     first_name: string;
     last_name: string;
     email: string;
+    stripe_account_id: string;
   } | null>(null);
   const [totalSubmissions, setTotalSubmissions] = useState<number | null>(null);
   const [totalApproved, setTotalApproved] = useState<number | null>(null);
   const [totalRejected, settotalRejected] = useState<number | null>(null);
   const [totalSold, settotalSold] = useState<number | null>(null);
   const [totalCommission, setTotalCommission]  = useState<number | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [isStripeonboarded, setIsStripeOnboarded] = useState<boolean | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("first_name, last_name, email")
+      .select("first_name, last_name, email, stripe_account_id")
       .eq("id", userId)
       .single();
     if (!error && data) setProfile(data);
@@ -74,6 +79,31 @@ export default function AccountPage() {
     }
   };
 
+  const handleConnectStripe = async () => {
+    setStripeLoading(true);
+    try {
+      const res = await fetch('/api/stripe-connect-onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email: profile?.email }),
+      });
+      const { url } = await res.json();
+      window.open(url, "_blank");
+    } finally {
+      setStripeLoading(false);
+    }
+  };
+
+  const checkStripeOnboarding = async (stripeAccountId: string) => {
+    const res = await fetch('/api/stripe-connect-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stripeAccountId }),
+    });
+    const { isOnboarded } = await res.json();
+    setIsStripeOnboarded(isOnboarded);
+  };
+
   useEffect(() => {
     if (!userId) return;
     fetchUserProfile(userId);
@@ -87,6 +117,12 @@ export default function AccountPage() {
     fetchSubmissionCountByStatus(userId, 'sold', settotalSold);
     fetchTotalCommission(userId);
   }, [userId]);
+
+  useEffect(() => {
+    if (profile?.stripe_account_id) {
+      checkStripeOnboarding(profile.stripe_account_id);
+    }
+  }, [profile?.stripe_account_id]);
 
   if (!userId) {
     return (
@@ -138,8 +174,25 @@ export default function AccountPage() {
               <span className="font-semibold">Unpaid Commission:</span>{" "}
                 {"-"}
             </div>
+            <div>
+              <span className="font-semibold">Stripe Account Id:</span>{" "}
+                {profile?.stripe_account_id ?? "-"}
+            </div>
           </div>
         </CardContent>
+        {profile?.stripe_account_id ? (
+          isStripeonboarded === null ? (
+            <div>Checking Stripe status...</div>
+          ) : isStripeonboarded ? (
+            <div className="text-green-600 font-semibold">Connected to Stripe</div>
+          ) : (
+            <div className="text-yellow-600 font-semibold">Stripe onboarding incomplete</div>
+          )
+        ) : (
+          <Button onClick={handleConnectStripe} disabled={stripeLoading}>
+            {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
+          </Button>
+        )}
       </Card>
     </div>
   );
