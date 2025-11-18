@@ -4,6 +4,7 @@ import { LeadStatus, type Lead } from './types';
 import { useState } from 'react';
 import { type LeadWithProfile } from '@/app/leads/types';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
+import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 import { Button } from "@/components/ui/button"
 
 type StatusChangeButtonProps = {
@@ -38,6 +39,12 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
     if (newStatus === 'rejected' ) {
       setPendingStatus('rejected');
       return;
+    }
+
+    // clear commission info for a status being moved from sold to any other status
+    if (lead?.status === 'sold') {
+      updatedData.commission_amount = null;
+      updatedData.commission_paid = false;
     }
 
     // Since status isn't sold or rejected, we can clear this info
@@ -75,12 +82,17 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
       return;
     }
 
+    const profit = (parseFloat(salePrice)) - (lead?.purchase_price ?? 0);
+    const commissionAmount = profit > 0 ? profit * SOURCER_COMMISSION_RATE : 0;
+
     const freshLead = await updateLeadsTableAndCalendar({
       lead,
       updatedData: {
         status: 'sold',
         sale_date: saleDate,
         sale_price: parseFloat(salePrice),
+        commission_amount: commissionAmount,
+        commission_paid: false,
       }
     });
     if (setLead && freshLead) setLead(freshLead);
