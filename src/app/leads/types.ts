@@ -13,7 +13,6 @@ export interface Lead {
   sourcer_id: string;
   title: string;
   purchase_price: number;
-  projected_sale_price: number;
   retail_price?: number;
   condition?: string;
   address: string;
