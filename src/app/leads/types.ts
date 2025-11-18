@@ -27,6 +27,6 @@ export interface Lead {
   sale_price?: number | null;
   rejection_reason?: string | null;
   image_url: string;
-  commission_amount?: number;
+  commission_amount?: number | null;
   commission_paid: boolean;
 }
