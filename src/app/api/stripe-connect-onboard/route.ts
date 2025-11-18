@@ -6,7 +6,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   const { userId, email } = await req.json();
-  console.log("Received userID:", userId)
 
   // 1. Create or retrieve a connected account for the user
   const account = await stripe.accounts.create({
@@ -20,7 +19,6 @@ export async function POST(req: Request) {
     email,
     metadata: { userId },
   });
-  console.log("Created Stripe account:", account.id);
 
   // 2. Create an account link for onboarding
   const accountLink = await stripe.accountLinks.create({
@@ -30,15 +28,12 @@ export async function POST(req: Request) {
     type: 'account_onboarding',
   });
 
-  console.log("Updating Supabase profile for userID: ", userId, " with stripe_account_id: ", account.id);
   // add User's stripe id into their profile
   const { data, error: supabaseError } = await supabaseAdmin
   .from("profiles")
   .update({ stripe_account_id: account.id })
   .eq("id", userId)
   .select();
-
-  console.log("Supabase update result:", data, "Error:", supabaseError);
 
   if (supabaseError) {
     console.error("Failed to update stripe_account_id:", supabaseError);
