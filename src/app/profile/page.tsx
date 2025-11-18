@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 import { Button } from "@/components/ui/button";
-import { handleClientScriptLoad } from "next/script";
 
 export default function AccountPage() {
   const { userId, isAdmin } = useCurrentUser();
@@ -179,20 +178,20 @@ export default function AccountPage() {
                 {profile?.stripe_account_id ?? "-"}
             </div>
           </div>
-        </CardContent>
-        {profile?.stripe_account_id ? (
-          isStripeonboarded === null ? (
-            <div>Checking Stripe status...</div>
-          ) : isStripeonboarded ? (
-            <div className="text-green-600 font-semibold">Connected to Stripe</div>
+          {profile?.stripe_account_id ? (
+            isStripeonboarded === null ? (
+              <div>Checking Stripe status...</div>
+            ) : isStripeonboarded ? (
+              <div className="text-green-600 font-semibold">Connected to Stripe</div>
+            ) : (
+              <div className="text-yellow-600 font-semibold">Stripe onboarding incomplete</div>
+            )
           ) : (
-            <div className="text-yellow-600 font-semibold">Stripe onboarding incomplete</div>
-          )
-        ) : (
-          <Button onClick={handleConnectStripe} disabled={stripeLoading}>
-            {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
-          </Button>
-        )}
+            <Button onClick={handleConnectStripe} disabled={stripeLoading}>
+              {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
+            </Button>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
