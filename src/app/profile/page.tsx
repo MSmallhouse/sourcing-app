@@ -17,6 +17,7 @@ export default function AccountPage() {
   } | null>(null);
   const [stripeLoading, setStripeLoading] = useState(false);
   const [isStripeonboarded, setIsStripeOnboarded] = useState<boolean | null>(null);
+  const [payoutLoading, setPayoutLoading] = useState(false);
 
   const { leads, loading: leadsLoading } = useLeads(userId, isAdmin);
 
@@ -65,6 +66,26 @@ export default function AccountPage() {
     });
     const { isOnboarded } = await res.json();
     setIsStripeOnboarded(isOnboarded);
+  };
+
+  const handleRequestPayout = async () => {
+    setPayoutLoading(true);
+    try {
+      const res = await fetch('/api/request-payout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Payout requested successfully!");
+        // Optionally refetch leads/profile here
+      } else {
+        alert(data.error || "Failed to request payout.");
+      }
+    } finally {
+      setPayoutLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -144,6 +165,15 @@ export default function AccountPage() {
           ) : (
             <Button onClick={handleConnectStripe} disabled={stripeLoading}>
               {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
+            </Button>
+          )}
+          {unpaidCommission > 0 && isStripeonboarded && (
+            <Button
+              onClick={handleRequestPayout}
+              disabled={payoutLoading}
+              className="mt-4"
+            >
+              {payoutLoading ? "Requesting Payout..." : "Request Payout"}
             </Button>
           )}
         </CardContent>
