@@ -13,10 +13,27 @@ async function updateLeadInDB(lead: Lead, updatedData: any) {
   }
 }
 
-function createDescription(lead: Partial<Lead>) {
+async function createDescription(lead: Partial<Lead>) {
+  let sourcerPhone = '';
+  if (lead.sourcer_id) {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('sourcer_phone')
+      .eq('id', lead.sourcer_id)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching sourcer phone:", error);
+    }
+    
+    if (profile && profile.sourcer_phone) {
+      sourcerPhone = profile.sourcer_phone;
+    }
+  }
   return `
     Address: ${lead.address ?? ''}
     Customer Phone: ${lead.phone ?? '' }
+    Sourcer Phone: ${sourcerPhone}
     Purchase Price: ${lead.purchase_price ?? ''}
     Notes: ${lead.notes ?? ''}
     `;
@@ -29,7 +46,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
 
   try {
     if (!wasOnCalendar && willBeOnCalendar) {
-      let description = createDescription(lead);
+      let description = await createDescription(lead);
 
       // Create calendar event
       const res = await fetch('/api/create-event', {
@@ -62,7 +79,8 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
       return lead.calendar_event_id ?? null;
 
     } else if (lead.calendar_event_id && editValues) {
-      let description = createDescription(editValues);
+      let description = await createDescription(editValues);
+      console.log(description);
 
       // Edit calendar event
       const res = await fetch('/api/edit-event', {
@@ -100,6 +118,7 @@ export async function updateLeadsTableAndCalendar({
     title: updatedData.title ?? lead.title ?? '',
     address: updatedData.address ?? lead.address ?? '',
     phone: updatedData.phone ?? lead.phone ?? '',
+    sourcer_id: lead.sourcer_id ?? '',
     purchase_price: updatedData.purchase_price ?? lead.purchase_price ?? '',
     notes: updatedData.notes ?? lead.notes ?? '',
     pickup_start: updatedData.pickup_start ?? lead.pickup_start,
