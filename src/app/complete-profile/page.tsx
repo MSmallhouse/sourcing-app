@@ -56,6 +56,7 @@ export default function CompleteProfile() {
       first_name: firstName,
       last_name: lastName,
       sourcer_phone: sourcerPhone,
+      email: session.user.email,
     })
     if (error) {
       setError(error.message)
