@@ -15,7 +15,7 @@ const STATUSES: LeadStatus[] = [
   'sold',
 ]
 
-export default function dashboardPage() {
+export default function DashboardPage() {
   const { userId, isAdmin } = useCurrentUser();
   const { leads, loading } = useLeads(userId, isAdmin);
 

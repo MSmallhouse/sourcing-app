@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { type Lead, type LeadWithProfile, type UpdatedLeadData, LeadStatus } from '@/app/leads/types';
 
-async function updateLeadInDB(lead: Lead, updatedData: any) {
+async function updateLeadInDB(lead: Lead, updatedData: Partial<Lead>) {
   const { error } = await supabase
     .from('leads')
     .update(updatedData)
@@ -46,7 +46,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
 
   try {
     if (!wasOnCalendar && willBeOnCalendar) {
-      let description = await createDescription(lead);
+      const description = await createDescription(lead);
 
       // Create calendar event
       const res = await fetch('/api/create-event', {
@@ -79,7 +79,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
       return lead.calendar_event_id ?? null;
 
     } else if (lead.calendar_event_id && editValues) {
-      let description = await createDescription(editValues);
+      const description = await createDescription(editValues);
       console.log(description);
 
       // Edit calendar event

@@ -27,7 +27,7 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (!lead) return;
     const newStatus = e.target.value as LeadStatus;
-    let updatedData: any = { status: newStatus };
+    const updatedData: Partial<Lead> = { status: newStatus };
 
     // Render the sold dialogue
     if (newStatus === 'sold') {
