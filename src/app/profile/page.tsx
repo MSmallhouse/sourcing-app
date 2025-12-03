@@ -163,7 +163,11 @@ export default function AccountPage() {
               <div className="text-yellow-600 font-semibold">Stripe onboarding incomplete</div>
             )
           ) : (
-            <Button onClick={handleConnectStripe} disabled={stripeLoading}>
+            <Button
+              onClick={handleConnectStripe}
+              disabled={stripeLoading}
+              className="mt-4"
+            >
               {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
             </Button>
           )}
@@ -176,6 +180,14 @@ export default function AccountPage() {
               {payoutLoading ? "Requesting Payout..." : "Request Payout"}
             </Button>
           )}
+          <div>
+            <Button
+              variant="outline"
+              className="mt-4"
+            >
+              <a href="/complete-profile">Edit Profile</a>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
