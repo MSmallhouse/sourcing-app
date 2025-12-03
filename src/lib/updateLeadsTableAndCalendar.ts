@@ -13,19 +13,31 @@ async function updateLeadInDB(lead: Lead, updatedData: any) {
   }
 }
 
+function createDescription(lead: Partial<Lead>) {
+  return `
+    Address: ${lead.address ?? ''}
+    Customer Phone: ${lead.phone ?? '' }
+    Purchase Price: ${lead.purchase_price ?? ''}
+    Notes: ${lead.notes ?? ''}
+    `;
+}
+
 export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newStatus: LeadStatus, editValues?: Partial<Lead>) {
   const ON_CALENDAR_STATUSES: LeadStatus[] = ['approved', 'picked up', 'sold'];
   const wasOnCalendar = ON_CALENDAR_STATUSES.includes(oldStatus);
   const willBeOnCalendar = ON_CALENDAR_STATUSES.includes(newStatus);
+
   try {
     if (!wasOnCalendar && willBeOnCalendar) {
+      let description = createDescription(lead);
+
       // Create calendar event
       const res = await fetch('/api/create-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: lead.title,
-          notes: lead.notes,
+          description: description,
           startISO: lead.pickup_start,
           endISO: lead.pickup_end,
         }),
@@ -50,6 +62,8 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
       return lead.calendar_event_id ?? null;
 
     } else if (lead.calendar_event_id && editValues) {
+      let description = createDescription(editValues);
+
       // Edit calendar event
       const res = await fetch('/api/edit-event', {
         method: 'POST',
@@ -57,7 +71,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
         body: JSON.stringify({
           calendarEventId: lead.calendar_event_id,
           title: editValues.title,
-          notes: editValues.notes,
+          description: description,
           pickup_start: editValues.pickup_start,
           pickup_end: editValues.pickup_end,
         }),
@@ -84,6 +98,9 @@ export async function updateLeadsTableAndCalendar({
   const calendarEditValues = {
     // extract only the info that needs to be updated on the calendar here
     title: updatedData.title ?? lead.title ?? '',
+    address: updatedData.address ?? lead.address ?? '',
+    phone: updatedData.phone ?? lead.phone ?? '',
+    purchase_price: updatedData.purchase_price ?? lead.purchase_price ?? '',
     notes: updatedData.notes ?? lead.notes ?? '',
     pickup_start: updatedData.pickup_start ?? lead.pickup_start,
     pickup_end: updatedData.pickup_end ?? lead.pickup_end,
