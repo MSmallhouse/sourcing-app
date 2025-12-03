@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -40,29 +42,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md p-6 bg-white text-gray-900 rounded-2xl shadow">
-        <h1 className="text-2xl font-semibold mb-4">Login</h1>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-lg p-2"
-            required
-          />
-          <Button
-            variant="outline"
-            type="submit"
-          >
-            Send Magic Link
-          </Button>
-        </form>
-        {message && (
-          <p className="mt-4 text-sm text-gray-600">{message}</p>
-        )}
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <Card className="w-full max-w-md p-6 space-y-4">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Button
+              variant="default"
+              type="submit"
+              className="w-full"
+            >
+              Send Magic Link
+            </Button>
+          </form>
+          {message && (
+            <p className="mt-4 text-sm text-muted-foreground">{message}</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
