@@ -5,14 +5,17 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 export default function CompleteProfile() {
-  const router = useRouter()
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [sourcerPhone, setSourcerPhone] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -24,12 +27,13 @@ export default function CompleteProfile() {
       }
       const { data: profile } = await supabase
         .from('profiles')
-        .select('first_name, last_name')
+        .select('first_name, last_name, sourcer_phone')
         .eq('id', session.user.id)
         .single()
       if (profile) {
         setFirstName(profile.first_name || '')
         setLastName(profile.last_name || '')
+        setSourcerPhone(profile.sourcer_phone || '')
       }
       setLoading(false)
     }
@@ -51,6 +55,7 @@ export default function CompleteProfile() {
       id: session.user.id,
       first_name: firstName,
       last_name: lastName,
+      sourcer_phone: sourcerPhone,
     })
     if (error) {
       setError(error.message)
@@ -65,53 +70,64 @@ export default function CompleteProfile() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900">
-        <div className="w-full max-w-md p-6 bg-white rounded-2xl shadow space-y-4 text-center">
-          <h1 className="text-2xl font-semibold mb-4">Profile Updated!</h1>
-          <p>Your information was successfully updated.</p>
-          <Link
-            href="/dashboard"
-            className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <Card className="w-full max-w-md p-6 space-y-4 text-center">
+          <CardHeader>
+            <CardTitle>Profile Updated!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Your information was successfully updated.</p>
+            <Button asChild className="mt-4">
+              <Link href="/dashboard">Go to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md p-6 bg-white rounded-2xl shadow space-y-4"
-      >
-        <h1 className="text-2xl font-semibold mb-4">Complete Your Profile</h1>
-        <input
-          type="text"
-          placeholder="First Name"
-          value={firstName}
-          onChange={e => setFirstName(e.target.value)}
-          className="w-full border rounded-lg p-2"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Last Name"
-          value={lastName}
-          onChange={e => setLastName(e.target.value)}
-          className="w-full border rounded-lg p-2"
-          required
-        />
-        {error && <p className="text-red-600">{error}</p>}
-        <Button
-          variant="outline"
-          type="submit"
-          disabled={saving}
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </Button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <Card className="w-full max-w-md p-6 space-y-4">
+        <CardHeader>
+          <CardTitle>Complete Your Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              required
+            />
+            <Input
+              type="tel"
+              placeholder="Phone Number"
+              pattern="[\d\s\-\+\(\)]*"
+              value={sourcerPhone}
+              onChange={e => setSourcerPhone(e.target.value)}
+              required
+            />
+            {error && <p className="text-red-600">{error}</p>}
+            <Button
+              variant="default"
+              type="submit"
+              disabled={saving}
+              className="w-full"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
