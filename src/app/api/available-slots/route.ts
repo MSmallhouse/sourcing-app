@@ -12,6 +12,8 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const TIMEZONE = process.env.TIMEZONE;
+
 export async function GET() {
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -21,7 +23,7 @@ export async function GET() {
 
   const calendar = google.calendar("v3");
 
-  const now = dayjs().tz('America/Denver'); // Current time
+  const now = dayjs().tz(TIMEZONE); // Current time
   const today = now.startOf("day");
   const sevenDaysFromNow = now.add(7, "day").endOf("day");
 
