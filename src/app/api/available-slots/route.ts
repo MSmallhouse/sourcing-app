@@ -3,10 +3,14 @@ import { google } from "googleapis";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 // Extend dayjs with the plugins
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export async function GET() {
   const auth = new google.auth.JWT({
@@ -17,7 +21,7 @@ export async function GET() {
 
   const calendar = google.calendar("v3");
 
-  const now = dayjs(); // Current time
+  const now = dayjs().tz('America/Denver'); // Current time
   const today = now.startOf("day");
   const sevenDaysFromNow = now.add(7, "day").endOf("day");
 
