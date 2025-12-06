@@ -4,8 +4,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useLeads } from '@/hooks/useLeads';
 import { useEffect, useState } from "react";
+import { StripeOnboardingStatus } from "@/types/stripe";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import Link from 'next/link';
 
 export default function AccountPage() {
   const { userId, isAdmin } = useCurrentUser();
@@ -16,8 +18,9 @@ export default function AccountPage() {
     stripe_account_id: string;
   } | null>(null);
   const [stripeLoading, setStripeLoading] = useState(false);
-  const [isStripeonboarded, setIsStripeOnboarded] = useState<boolean | null>(null);
+  const [stripeOnboardStatus, setStripeOnboardStatus] = useState<StripeOnboardingStatus | null>(null);
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [stripeOnboardUrl, setStripeOnboardUrl] = useState('');
 
   const { leads, loading: leadsLoading } = useLeads(userId, isAdmin);
 
@@ -49,10 +52,15 @@ export default function AccountPage() {
       const res = await fetch('/api/stripe-connect-onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, email: profile?.email }),
+        body: JSON.stringify({
+          userId,
+          email: profile?.email,
+          stripeOnboardStatus,
+          stripe_account_id: profile?.stripe_account_id ?? null, 
+        }),
       });
       const { url } = await res.json();
-      window.open(url, "_blank");
+      setStripeOnboardUrl(url);
     } finally {
       setStripeLoading(false);
     }
@@ -65,7 +73,7 @@ export default function AccountPage() {
       body: JSON.stringify({ stripeAccountId }),
     });
     const { isOnboarded } = await res.json();
-    setIsStripeOnboarded(isOnboarded);
+    setStripeOnboardStatus(isOnboarded ? 'complete' : 'incomplete');
   };
 
   const handleRequestPayout = async () => {
@@ -94,10 +102,20 @@ export default function AccountPage() {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) return;
     if (profile?.stripe_account_id) {
       checkStripeOnboarding(profile.stripe_account_id);
+    } else {
+      setStripeOnboardStatus('not_started');
     }
   }, [profile?.stripe_account_id]);
+
+  useEffect(() => {
+    if (!userId) return;
+    if (stripeOnboardStatus !== null) {
+      handleConnectStripe();
+    }
+  }, [stripeOnboardStatus, userId])
 
   if (!userId) {
     return (
@@ -154,24 +172,16 @@ export default function AccountPage() {
                 {profile?.stripe_account_id ?? "-"}
             </div>
           </div>
-          {profile?.stripe_account_id ? (
-            isStripeonboarded === null ? (
-              <div>Checking Stripe status...</div>
-            ) : isStripeonboarded ? (
-              <div className="text-green-600 font-semibold">Connected to Stripe</div>
-            ) : (
-              <div className="text-yellow-600 font-semibold">Stripe onboarding incomplete</div>
-            )
-          ) : (
-            <Button
-              onClick={handleConnectStripe}
-              disabled={stripeLoading}
-              className="mt-4"
-            >
-              {stripeLoading ? "Loading Stripe..." : "Connect with Stripe"}
-            </Button>
-          )}
-          {unpaidCommission > 0 && isStripeonboarded && (
+          <Button
+            disabled={stripeLoading}
+            className="mt-4"
+          >
+            <Link href={stripeOnboardUrl} target="_blank">
+              {stripeLoading ? "Loading Stripe..." :
+                stripeOnboardStatus == 'complete' ? "Update Stripe Account" : 'Connect With Stripe'}
+            </Link>
+          </Button>
+          {unpaidCommission > 0 && stripeOnboardStatus && (
             <Button
               onClick={handleRequestPayout}
               disabled={payoutLoading}

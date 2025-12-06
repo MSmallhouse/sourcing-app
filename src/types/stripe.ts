@@ -1,0 +1,1 @@
+export type StripeOnboardingStatus = 'not_started' | 'incomplete' | 'complete';
