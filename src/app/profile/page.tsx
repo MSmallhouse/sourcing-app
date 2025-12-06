@@ -112,10 +112,9 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!userId) return;
-    if (stripeOnboardStatus !== null) {
-      handleConnectStripe();
-    }
-  }, [stripeOnboardStatus, userId])
+    if (!stripeOnboardStatus) return;
+    handleConnectStripe();
+  }, [stripeOnboardStatus, userId, profile?.stripe_account_id])
 
   if (!userId) {
     return (
