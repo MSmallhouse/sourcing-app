@@ -61,7 +61,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full"
             >
-              Send Magic Link
+              Send Login Link
             </Button>
           </form>
           {message && (
