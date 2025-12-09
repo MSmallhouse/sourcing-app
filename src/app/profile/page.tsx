@@ -125,7 +125,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10">
+    <div className="max-w-md mx-auto mt-10 p-8">
       <Card>
         <CardHeader>
           <CardTitle>Account</CardTitle>
