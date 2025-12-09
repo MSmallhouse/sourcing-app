@@ -14,6 +14,11 @@ dayjs.extend(timezone);
 
 const TIMEZONE = process.env.TIMEZONE;
 
+function isWeekend(date: dayjs.ConfigType) {
+  const dayOfWeek = dayjs(date).day();
+  return dayOfWeek === 0 || dayOfWeek === 6;
+}
+
 export async function GET() {
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -42,6 +47,7 @@ export async function GET() {
   const allSlots = [];
   for (let i = 0; i < 7; i++) {
     const day = now.add(i, "day");
+    if ( isWeekend(day) ) continue;
     for (let hour = 9; hour < 17; hour++) {
       const start = day.hour(hour).minute(0).second(0);
       const end = start.add(1, "hour");
