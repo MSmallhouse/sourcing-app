@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Search, Plus, Heart, User } from "lucide-react"
+import { Home, Plus, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  if (pathname === "/login") return null; // Hide on /login
 
   return (
     <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
