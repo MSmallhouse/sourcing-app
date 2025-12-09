@@ -14,7 +14,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import {useRouter } from 'next/navigation'
-import type { Lead } from './types';
+import type { Lead } from '@/types/leads';
 import { deleteLeadImage } from '@/lib/supabaseImageHelpers';
 import { Button } from "@/components/ui/button"
 

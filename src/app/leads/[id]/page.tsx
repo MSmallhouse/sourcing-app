@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
-import { type LeadWithProfile, type Lead } from '../types';
+import { type LeadWithProfile, type Lead } from '@/types/leads';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { DeleteLeadButton } from '../DeleteLeadButton';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';

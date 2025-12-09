@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Lead } from '@/app/leads/types';
+import type { Lead } from '@/types/leads';
 import {
   Select,
   SelectContent,
