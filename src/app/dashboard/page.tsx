@@ -23,11 +23,6 @@ export default function DashboardPage() {
     return leads.filter((lead) => lead.status === status);
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/login';
-  }
-
   return (
     <div className="p-8 max-w-lg mx-auto">
       {STATUSES.map((status) => (
@@ -45,12 +40,6 @@ export default function DashboardPage() {
           )}
         </div>
       ))}
-      <Button
-        variant="destructive"
-        onClick={handleLogout}
-      >
-        Log Out
-      </Button>
     </div>
   )
 }

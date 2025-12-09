@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { StripeOnboardingStatus } from "@/types/stripe";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group"
 import Link from 'next/link';
 
 export default function AccountPage() {
@@ -95,6 +96,11 @@ export default function AccountPage() {
       setPayoutLoading(false);
     }
   };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  }
 
   useEffect(() => {
     if (!userId) return;
@@ -189,14 +195,19 @@ export default function AccountPage() {
               {payoutLoading ? "Requesting Payout..." : "Request Payout"}
             </Button>
           )}
-          <div>
+          <ButtonGroup className="mt-4">
             <Button
               variant="outline"
-              className="mt-4"
             >
               <a href="/complete-profile">Edit Profile</a>
             </Button>
-          </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+            >
+              Log Out
+            </Button>
+          </ButtonGroup>
         </CardContent>
       </Card>
     </div>
