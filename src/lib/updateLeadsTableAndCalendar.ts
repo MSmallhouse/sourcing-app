@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
-import { type Lead, type LeadWithProfile, type UpdatedLeadData, LeadStatus } from '@/app/leads/types';
+import { type Lead, type LeadWithProfile, type UpdatedLeadData, LeadStatus } from '@/types/leads';
 
 async function updateLeadInDB(lead: Lead, updatedData: Partial<Lead>) {
   const { error } = await supabase

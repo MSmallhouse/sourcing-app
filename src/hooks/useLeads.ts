@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import type { Lead } from '@/app/leads/types';
+import type { Lead } from '@/types/leads';
 
 export function useLeads(userId: string | null, isAdmin: boolean) {
   const [leads, setLeads] = useState<Lead[]>([]);

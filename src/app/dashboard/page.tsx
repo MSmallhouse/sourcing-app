@@ -2,9 +2,7 @@
 import { LeadCard } from './LeadCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads'
-import type { LeadStatus } from '@/app/leads/types'
-import { supabase } from '@/lib/supabaseClient';
-import { Button } from "@/components/ui/button"
+import type { LeadStatus } from '@/types/leads'
 
 const STATUSES: LeadStatus[] = [
   'submitted',

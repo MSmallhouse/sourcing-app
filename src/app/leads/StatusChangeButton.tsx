@@ -1,8 +1,7 @@
 'use client';
 
-import { LeadStatus, type Lead } from './types';
+import { LeadStatus, type Lead, type LeadWithProfile } from '@/types/leads';
 import { useState } from 'react';
-import { type LeadWithProfile } from '@/app/leads/types';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
 import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 import { Button } from "@/components/ui/button"

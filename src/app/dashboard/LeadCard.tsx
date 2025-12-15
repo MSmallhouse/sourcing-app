@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { type Lead } from '@/app/leads/types';
+import { type Lead } from '@/types/leads';
 
 export function LeadCard({ lead }: { lead: Lead }) {
   return (
