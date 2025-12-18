@@ -179,7 +179,7 @@ export default function AccountPage() {
           </div>
           <Button
             disabled={stripeLoading}
-            className="mt-4"
+            className="mt-4 block"
           >
             <Link href={stripeOnboardUrl} target="_blank">
               {stripeLoading ? "Loading Stripe..." :
@@ -190,7 +190,7 @@ export default function AccountPage() {
             <Button
               onClick={handleRequestPayout}
               disabled={payoutLoading}
-              className="mt-4"
+              className="mt-4 block"
             >
               {payoutLoading ? "Requesting Payout..." : "Request Payout"}
             </Button>
