@@ -31,7 +31,6 @@ async function createDescription(lead: Partial<Lead>) {
     }
   }
   return `
-    Address: ${lead.address ?? ''}
     Customer Phone: ${lead.phone ?? '' }
     Sourcer Phone: ${sourcerPhone}
     Purchase Price: ${lead.purchase_price ?? ''}
@@ -54,6 +53,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: lead.title,
+          location: lead.address,
           description: description,
           startISO: lead.pickup_start,
           endISO: lead.pickup_end,
@@ -88,6 +88,7 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
         body: JSON.stringify({
           calendarEventId: lead.calendar_event_id,
           title: editValues.title,
+          location: editValues.address,
           description: description,
           pickup_start: editValues.pickup_start,
           pickup_end: editValues.pickup_end,

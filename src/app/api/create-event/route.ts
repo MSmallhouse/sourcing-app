@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 export async function POST(req: Request) {
   try {
-    const { title, description, startISO, endISO } = await req.json();
+    const { title, location, description, startISO, endISO } = await req.json();
 
     if (!title || !startISO || !endISO) {
       return NextResponse.json({ success: false, error: 'Missing required fields' });
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
       requestBody: {
         summary: title,
+        location: location,
         description: description,
         start: { dateTime: startISO },
         end: { dateTime: endISO },
