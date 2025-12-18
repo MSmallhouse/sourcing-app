@@ -80,7 +80,6 @@ export async function syncCalendarEvent(lead: Lead, oldStatus: LeadStatus, newSt
 
     } else if (lead.calendar_event_id && editValues) {
       const description = await createDescription(editValues);
-      console.log(description);
 
       // Edit calendar event
       const res = await fetch('/api/edit-event', {
