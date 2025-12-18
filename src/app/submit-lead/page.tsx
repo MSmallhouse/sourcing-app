@@ -132,6 +132,30 @@ export default function SubmitLeadPage() {
       .eq('id', lead.id);
     }
 
+    // Send email notification to the admin
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: process.env.NEXT_PUBLIC_ADMIN_NOTIFICATIONS_EMAIL,
+          subject: 'New Lead Submitted',
+          html: `
+            <h1>New Lead Submitted</h1>
+            <p><strong>Title:</strong> ${title}</p>
+            <p><strong>Condition:</strong> ${condition}</p>
+            <p><strong>Purchase Price:</strong> $${purchasePrice}</p>
+            <p><strong>Retail Price:</strong> $${retailPrice}</p>
+            <p><strong>Notes:</strong> ${notes}</p>
+          `,
+        }),
+      });
+      const emailBody = await response.json();
+      console.log('email APi Respone: ', emailBody)
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+    }
+
     // Clear the form fields
     setTitle('');
     if (fileInputRef.current) {
