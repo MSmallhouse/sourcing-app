@@ -169,6 +169,7 @@ export default function SubmitLeadPage() {
             required
           />
           <Button
+          type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
           >
