@@ -20,6 +20,9 @@ export default function Navbar() {
         <Link href="/submit-lead" className="hover:underline">
           Submit a Lead
         </Link>
+        <Link href="/faqs" className="hover:underline">
+          FAQs
+        </Link>
       </div>
     </nav>
   );
