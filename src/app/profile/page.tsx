@@ -23,7 +23,7 @@ export default function AccountPage() {
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [stripeOnboardUrl, setStripeOnboardUrl] = useState('');
 
-  const { leads, loading: leadsLoading } = useLeads(userId, isAdmin);
+  const { leads, loading: leadsLoading } = useLeads(userId, false);
 
   const totalSubmissions = leads.length;
   const totalApproved = leads.filter(l =>
