@@ -92,10 +92,12 @@ export default function Faq() {
           <AccordionContent>
             <p>Follow this structure for your conversations:</p>
             <p><strong>Example – $300 Sectional</strong></p>
-            <p><strong>Message 1:</strong> Hi! Is this still available? Can you do $200?</p>
+            <p><strong>Message 1:</strong> Hi! Is this still available? Can you do $200? I can pick up [insert available date]</p>
+            <p><strong>Customer Response:</strong> Can you meet me at $250? What time on [insert date] can you pick up?</p>
             <p><strong>Message 2:</strong> I can pick up [insert available date/time based on our pickup availability].</p>
             <p>Continue conversation until price and pickup timing are agreed</p>
             <p><strong>Lock-In Message:</strong> Perfect — I’ll be sending movers to collect this. Could I get your phone number so they can contact you when they’re on the way?</p>
+            <p>Submit a lead via the <a href="/submit-lead">Submit a Lead form</a></p>
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="payment-questions">
