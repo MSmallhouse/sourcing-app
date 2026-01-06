@@ -172,18 +172,14 @@ export default function AccountPage() {
               <span className="font-semibold">Unpaid Commission:</span>{" $"}
                 {unpaidCommission !== null ? unpaidCommission.toFixed(2) : "0"}
             </div>
-            <div>
-              <span className="font-semibold">Stripe Account Id:</span>{" "}
-                {profile?.stripe_account_id ?? "-"}
-            </div>
           </div>
           <Button
             disabled={stripeLoading}
             className="mt-4 block"
           >
             <Link href={stripeOnboardUrl} target="_blank">
-              {stripeLoading ? "Loading Stripe..." :
-                stripeOnboardStatus == 'complete' ? "Update Stripe Account" : 'Connect With Stripe'}
+              {stripeLoading ? "Loading..." :
+                stripeOnboardStatus == 'complete' ? 'Update Banking Info' : 'Connect Bank Account'}
             </Link>
           </Button>
           {unpaidCommission > 0 && stripeOnboardStatus && (
