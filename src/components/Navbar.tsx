@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from "next/navigation"
 
 export default function Navbar() {
@@ -9,7 +10,15 @@ export default function Navbar() {
 
   return (
     <nav className="w-full border-b-1 text-white px-6 py-3 items-center justify-between hidden md:flex">
-      <div className="text-lg font-bold">Instant Offer Furniture</div>
+
+      <Link href="/dashboard">
+        <Image
+          src="/images/iof-logo-text.svg"
+          width={150}
+          height={0}
+          alt="Instant Offer Furniture"
+        />
+      </Link>
       <div className="flex space-x-4">
         <Link href="/profile" className="hover:underline">
           My Profile
