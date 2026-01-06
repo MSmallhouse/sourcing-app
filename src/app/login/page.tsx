@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabaseClient'
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import Image from 'next/image'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -42,34 +44,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-8">
-      <Card className="w-full max-w-md p-6 space-y-4">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <Input
-              type="email"
-              autoComplete="email"
-              placeholder="Your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Button
-              variant="default"
-              type="submit"
-              className="w-full"
-            >
-              Send Login Link
-            </Button>
-          </form>
-          {message && (
-            <p className="mt-4 text-sm text-muted-foreground">{message}</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <nav className="w-full border-b-1 text-white px-6 py-3 flex justify-center">
+        <Link href="https://instantofferfurniture.com/" target="_blank">
+          <Image
+            src="/images/iof-logo-text.svg"
+            width={150}
+            height={0}
+            alt="Instant Offer Furniture"
+          />
+        </Link>
+      </nav>
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-8">
+        <Card className="w-full max-w-md p-6 space-y-4">
+          <CardHeader className="mb-0">
+            <CardTitle>Login or Sign Up</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <Input
+                type="email"
+                autoComplete="email"
+                placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button
+                variant="default"
+                type="submit"
+                className="w-full"
+              >
+                Send Login Link
+              </Button>
+            </form>
+            {message && (
+              <p className="mt-4 text-sm text-muted-foreground">{message}</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   )
 }
