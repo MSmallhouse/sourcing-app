@@ -30,8 +30,8 @@ export default function SubmitLeadPage() {
   const [notes, setNotes] = useState('');
   const [pickupTime, setPickupTime] = useState('');
   const [botResult, setBotResult] = useState<null | {
-    is_below_high_end: boolean;
-    resale_range: string;
+    accepted: boolean;
+    resale_estimate: string;
     reasoning: string;
   }>(null);
   const [step, setStep] = useState<'review' | 'submit'>('review');
@@ -90,8 +90,8 @@ export default function SubmitLeadPage() {
       }
   
       setBotResult({
-        is_below_high_end: verdictObj.is_below_high_end ?? verdictObj.IS_BELOW_HIGH_END,
-        resale_range: verdictObj.resale_range || verdictObj.RESALE_RANGE,
+        accepted: verdictObj.accepted?? verdictObj.ACCEPTED,
+        resale_estimate: verdictObj.resale_estimate|| verdictObj.RESALE_ESTIMATE,
         reasoning: verdictObj.reasoning || verdictObj.REASONING,
       });
       setStep('submit');
@@ -176,6 +176,24 @@ export default function SubmitLeadPage() {
   return (
     <div className="p-8 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">Submit a Lead</h1>
+      {botResult && step === 'submit' && (
+        <div
+          className={`p-4 mb-8 rounded text-white ${
+            botResult.accepted ? 'bg-green-600' : 'bg-orange-600'
+          }`}
+        >
+          <div className="font-bold text-lg">
+            {botResult.accepted ? 'Accepted by Quote Bot' : 'Rejected by Quote Bot'}
+          </div>
+          <div className="mt-2">
+            <span className="font-semibold">Estimated Resale Value:</span> {botResult.resale_estimate}
+          </div>
+          <div className="mt-1 italic">{botResult.reasoning}</div>
+          {!botResult.accepted && (
+            <div className="mt-4">You may still submit this lead if you believe it has sufficient resale value</div>
+          )}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4 mb-8">
         <div className={`space-y-4 ${step === 'submit' ? 'hidden' : ''}`}>
           <Input
@@ -279,6 +297,7 @@ export default function SubmitLeadPage() {
         </div>
         {step === 'submit' && (
           <Button
+            className='me-2'
             variant="secondary"
             onClick={() => setStep('review')}
           >
@@ -295,21 +314,6 @@ export default function SubmitLeadPage() {
             : 'Submit Lead'}
         </Button>
       </form>
-      {botResult && step === 'submit' && (
-        <div
-          className={`p-4 mb-4 rounded text-white ${
-            botResult.is_below_high_end ? 'bg-green-500' : 'bg-red-500'
-          }`}
-        >
-          <div className="font-bold text-lg">
-            {botResult.is_below_high_end ? 'Accepted by Quote Bot' : 'Rejected by Quote Bot'}
-          </div>
-          <div className="mt-2">
-            <span className="font-semibold">Suggested Offer Range:</span> {botResult.resale_range}
-          </div>
-          <div className="mt-1 italic">{botResult.reasoning}</div>
-        </div>
-      )}
     </div>
   );
 }
