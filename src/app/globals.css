@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@700&family=Poppins:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,8 +42,12 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Poppins', Arial, sans-serif; /* Default font for body text */
   border-color: var(--border) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Oxanium', Arial, sans-serif; /* Font for headings */
 }
 
 .rounded {
