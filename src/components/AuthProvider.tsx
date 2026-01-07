@@ -12,6 +12,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        if (pathname == '/faqs') {
+          return;
+        }
         // If logged out AND not already on a public route → send to login
         if (!session && !PUBLIC_ROUTES.includes(pathname)) {
           window.location.href = '/login'
