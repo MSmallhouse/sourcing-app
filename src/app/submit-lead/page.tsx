@@ -147,11 +147,14 @@ export default function SubmitLeadPage() {
             <p><strong>Purchase Price:</strong> $${purchasePrice}</p>
             <p><strong>Retail Price:</strong> $${retailPrice}</p>
             <p><strong>Notes:</strong> ${notes}</p>
+            ${
+              imageUrl
+                ? `<p><strong>Image:</strong></p><img src="${imageUrl}" alt="Lead Image" style="max-width: 100%; height: auto;" />`
+                : '<p><strong>Image:</strong> No image uploaded.</p>'
+            }
           `,
         }),
       });
-      const emailBody = await response.json();
-      console.log('email APi Respone: ', emailBody)
     } catch (emailError) {
       console.error('Failed to send email notification:', emailError);
     }
