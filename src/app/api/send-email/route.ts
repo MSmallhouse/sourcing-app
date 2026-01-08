@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
   try {
     const data = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'Instant Offer Furniture <no-reply@updates.instantofferfurniture.com>',
       to,
       subject,
       html,
