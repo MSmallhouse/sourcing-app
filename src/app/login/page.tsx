@@ -55,10 +55,10 @@ export default function LoginPage() {
           />
         </Link>
       </nav>
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-8">
-        <Card className="w-full max-w-md p-6 space-y-4">
+      <div className="flex flex-col items-center bg-background text-foreground p-8">
+        <Card className="w-full max-w-md p-4 space-y-4 mb-8">
           <CardHeader className="mb-0">
-            <CardTitle>Login or Sign Up</CardTitle>
+            <CardTitle>Log In or Sign Up</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -81,6 +81,20 @@ export default function LoginPage() {
             {message && (
               <p className="mt-4 text-sm text-muted-foreground">{message}</p>
             )}
+          </CardContent>
+        </Card>
+        <Card className="w-full max-w-md p-4 mb-8">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold">About The Program</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc list-inside side space-y-2 mb-4">
+              <li>Message furniture sellers on Facebook Marketplace, Craigslist, etc.</li>
+              <li>Negotiate a purchase price and set up pickup details with the seller.</li>
+              <li>Earn 20% commission when the piece sells from the Instant Offer Furniture storefront!</li>
+            </ul>
+            <p>Read Our <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">FAQs</Link> for more information.</p>
+            <p>Visit <Link href="https://instantofferfurniture.com/" target="_blank" className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Instant Offer Furniture</Link> for more about the company.</p>
           </CardContent>
         </Card>
       </div>
