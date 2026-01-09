@@ -29,4 +29,6 @@ export interface Lead {
   image_url: string;
   commission_amount?: number | null;
   commission_paid: boolean;
+  dev_commission_amount?: number | null;
+  dev_commission_paid: boolean;
 }
