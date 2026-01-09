@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group"
 import Link from 'next/link';
+import { isDevUser } from "@/lib/utils";
 
 export default function AccountPage() {
   const { userId, isAdmin } = useCurrentUser();
@@ -23,7 +24,8 @@ export default function AccountPage() {
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [stripeOnboardUrl, setStripeOnboardUrl] = useState('');
 
-  const { leads, loading: leadsLoading } = useLeads(userId, false);
+  const isDev = isDevUser(userId);
+  const { leads, loading: leadsLoading } = useLeads(userId, isDev); // only the dev needs to see all leads here
 
   const totalSubmissions = leads.length;
   const totalApproved = leads.filter(l =>
@@ -31,12 +33,21 @@ export default function AccountPage() {
   ).length;
   const totalRejected = leads.filter(l => l.status === "rejected").length;
   const totalSold = leads.filter(l => l.status === "sold").length;
-  const totalCommission = leads
+  let totalCommission = leads
     .filter(l => l.commission_amount ?? 0)
     .reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
-  const unpaidCommission = leads
+  let unpaidCommission = leads
     .filter(l => !l.commission_paid && (l.commission_amount ?? 0))
     .reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
+  
+  if (isDev) {
+    totalCommission = leads
+      .filter(l => l.dev_commission_amount ?? 0)
+      .reduce((sum, l) => sum + (l.dev_commission_amount ?? 0), 0);
+    unpaidCommission = leads
+      .filter(l => !l.dev_commission_paid && (l.dev_commission_amount ?? 0))
+      .reduce((sum, l) => sum + (l.dev_commission_amount ?? 0), 0);
+  }
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase

@@ -3,7 +3,7 @@
 import { LeadStatus, type Lead, type LeadWithProfile } from '@/types/leads';
 import { useState } from 'react';
 import { updateLeadsTableAndCalendar } from '@/lib/updateLeadsTableAndCalendar';
-import { SOURCER_COMMISSION_RATE } from "@/config/constants";
+import { SOURCER_COMMISSION_RATE, DEV_COMMISSION_RATE } from "@/config/constants";
 import { Button } from "@/components/ui/button"
 
 type StatusChangeButtonProps = {
@@ -44,6 +44,8 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
     if (lead?.status === 'sold') {
       updatedData.commission_amount = null;
       updatedData.commission_paid = false;
+      updatedData.dev_commission_amount = null;
+      updatedData.dev_commission_paid = false;
     }
 
     // Since status isn't sold or rejected, we can clear this info
@@ -83,6 +85,7 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
 
     const profit = (parseFloat(salePrice)) - (lead?.purchase_price ?? 0);
     const commissionAmount = profit > 0 ? profit * SOURCER_COMMISSION_RATE : 0;
+    const devCommissionAmount = profit > 0 ? profit * DEV_COMMISSION_RATE : 0;
 
     const freshLead = await updateLeadsTableAndCalendar({
       lead,
@@ -92,6 +95,8 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
         sale_price: parseFloat(salePrice),
         commission_amount: commissionAmount,
         commission_paid: false,
+        dev_commission_amount: devCommissionAmount,
+        dev_commission_paid: false,
       }
     });
     if (setLead && freshLead) setLead(freshLead);

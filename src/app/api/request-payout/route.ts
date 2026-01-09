@@ -1,25 +1,38 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { isDevUser } from "@/lib/utils";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   const { userId } = await req.json();
+  const isDev = isDevUser(userId);
 
-  // 1. Fetch user's unpaid leads and sum commission
-  const { data: leads, error } = await supabaseAdmin
-    .from('leads')
-    .select('id, commission_amount')
-    .eq('sourcer_id', userId)
-    .eq('commission_paid', false)
-    .eq('status', 'sold');
+  // 1. Fetch unpaid leads and sum commission
+  let leadsQuery = supabaseAdmin.from('leads').select('id, commission_amount, dev_commission_amount');
+
+  if (isDev) {
+    leadsQuery = leadsQuery
+      .eq('dev_commission_paid', false)
+      .not('dev_commission_amount', 'is', null); // Ensure dev commission exists
+  } else {
+    leadsQuery = leadsQuery
+      .eq('sourcer_id', userId)
+      .eq('commission_paid', false)
+      .not('commission_amount', 'is', null); // Ensure user commission exists
+  }
+
+  const { data: leads, error } = await leadsQuery.eq('status', 'sold');
 
   if (error || !leads || leads.length === 0) {
     return NextResponse.json({ error: "No unpaid commission found." }, { status: 400 });
   }
 
-  const totalCommission = leads.reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
+  const totalCommission = isDev ? 
+    leads.reduce((sum, l) => sum + (l.dev_commission_amount ?? 0), 0) :
+    leads.reduce((sum, l) => sum + (l.commission_amount ?? 0), 0);
+
 
   // 2. Fetch user's stripe_account_id
   const { data: profile } = await supabaseAdmin
