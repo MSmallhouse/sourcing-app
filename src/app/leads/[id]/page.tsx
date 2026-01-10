@@ -300,7 +300,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           </>
         ) : (
-          <div className="flex space-x-2 mt-2">
+          <div className="flex space-x-2 mt-2 mb-4">
             <Button
               variant="outline"
               onClick={() => {
