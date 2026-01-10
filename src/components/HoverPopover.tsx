@@ -1,3 +1,8 @@
+/*
+* adapted from the reply on this page:
+* https://github.com/radix-ui/primitives/issues/2051
+*/
+
 'use client';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
