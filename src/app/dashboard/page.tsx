@@ -3,7 +3,7 @@ import { LeadCard } from './LeadCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads';
 import type { LeadStatus } from '@/types/leads';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { HoverPopover } from '@/components/HoverPopover';
 import { Info } from 'lucide-react'; // Icon library for the info icon
 
 const STATUSES: { status: LeadStatus; description: string }[] = [
@@ -31,15 +31,12 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold mb-2 pt-8">
               {`${status.charAt(0).toUpperCase() + status.slice(1)}`}
             </h2>
-            <Tooltip>
-              <TooltipTrigger className="pt-4 ms-1">
+            <HoverPopover
+              trigger={
                 <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
-              </TooltipTrigger>
-              <TooltipContent
-                className="bg-slate-800 text-white border border-slate-700 shadow-md [&_svg]:hidden! max-w-[90vw]">
-                <p className='max-w-[90vw]'>{description}</p>
-              </TooltipContent>
-            </Tooltip>
+              }
+              content={<p>{description}</p>}
+            />
           </div>
           {loading ? (
             <p>Loading...</p>
