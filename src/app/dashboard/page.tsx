@@ -7,12 +7,12 @@ import { HoverPopover } from '@/components/HoverPopover';
 import { Info } from 'lucide-react'; // Icon library for the info icon
 
 const STATUSES: { status: LeadStatus; description: string }[] = [
-  { status: 'submitted', description: 'These leads have been submitted but not yet reviewed.' },
-  { status: 'approved', description: 'These leads have been approved and are ready for further action.' },
-  { status: 'rejected', description: 'These leads have been rejected and require no further action.' },
-  { status: 'picked up', description: 'These leads have been picked up and are in transit.' },
+  { status: 'submitted', description: 'These leads have been submitted but not yet reviewed by our team.' },
+  { status: 'approved', description: 'These leads have been approved for pickup by our team.' },
+  { status: 'rejected', description: 'These leads have been rejected, view the lead\'s page to see why.' },
+  { status: 'picked up', description: 'These leads have been picked up and will be listed at our storefront.' },
   { status: 'pending sold', description: 'These leads are pending sale and awaiting confirmation.' },
-  { status: 'sold', description: 'These leads have been sold successfully.' },
+  { status: 'sold', description: 'These leads have been sold successfully!' },
 ];
 
 export default function DashboardPage() {
