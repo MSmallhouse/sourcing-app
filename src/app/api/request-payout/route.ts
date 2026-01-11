@@ -63,7 +63,7 @@ export async function POST(req: Request) {
   const leadIds = leads.map(l => l.id);
   await supabaseAdmin
     .from('leads')
-    .update({ commission_paid: true })
+    .update(isDev ? { dev_commission_paid: true } : { commission_paid: true })
     .in('id', leadIds);
 
   return NextResponse.json({ success: true });
