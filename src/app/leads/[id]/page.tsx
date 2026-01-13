@@ -290,45 +290,47 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             <div className="flex space-x-2 mt-2">
               <Button
                 variant="outline"
-                onClick={handleEditSave}
-              >
-                Save
-              </Button>
-              <Button
-                variant="secondary"
                 onClick={handleEditCancel}
               >
                 Cancel
               </Button>
+              <Button
+                variant="secondary"
+                onClick={handleEditSave}
+              >
+                Save
+              </Button>
             </div>
           </>
         ) : (
-          <div className="flex space-x-2 mt-2 mb-4">
-            {(isAdmin || !isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
+          <>
+            <div className="flex space-x-2 mt-2 mb-8">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditValues({
-                    ...lead,
-                    purchase_price: lead.purchase_price?.toString() ?? '',
-                  });
-                }}
+                onClick={() => router.back()}
               >
-                Edit
+                Back
               </Button>
-            )}
-          </div>
+              {(isAdmin || !isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditValues({
+                      ...lead,
+                      purchase_price: lead.purchase_price?.toString() ?? '',
+                    });
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
+            </div>
+            {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) ? (
+              <DeleteLeadButton lead={lead} />
+            ) : null}
+          </>
         )}
-        {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) ? (
-          <DeleteLeadButton lead={lead} />
-        ) : null}
-        <Button
-          variant="outline"
-          onClick={() => router.back()}
-        >
-          Back
-        </Button>
       </div>
   </div>
   );
