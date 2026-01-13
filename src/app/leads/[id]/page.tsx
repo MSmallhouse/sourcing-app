@@ -313,7 +313,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
             >
               Edit
             </Button>
-            <DeleteLeadButton lead={lead} />
+            {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
+              <DeleteLeadButton lead={lead} />
+            )}
           </div>
         )}
         <Button
