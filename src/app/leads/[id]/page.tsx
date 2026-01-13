@@ -27,6 +27,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [editValues, setEditValues] = useState<LeadEditValues>({});
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { userId, isAdmin } = useCurrentUser();
   const router = useRouter();
@@ -82,6 +83,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
   const handleEditSave = async () => {
     if (!lead) return;
+
+    setIsSaving(true);
     // If a new image is selected, delete the old image and upload the new one
     let newImageUrl = lead.image_url;
     if (editImageFile) {
@@ -113,6 +116,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       editFileInputRef.current.value = '';
     }
     setEditImageFile(null);
+
+    setIsSaving(false);
   };
 
   if (loading || isAdmin === undefined) return <div className="p-8">Loading...</div>;
@@ -297,8 +302,9 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               <Button
                 variant="secondary"
                 onClick={handleEditSave}
+                disabled={isSaving}
               >
-                Save
+                {isSaving ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </>
