@@ -30,7 +30,7 @@ export function LeadCard({ lead }: { lead: Lead }) {
             </CardHeader>
             <CardContent className="p-0 mt-2 space-y-1">
               <div className="text-sm">Price: ${lead.purchase_price}</div>
-              <div className="text-sm">Notes: {lead.notes}</div>
+              <div className="text-sm">Notes: {lead.notes.length > 100 ? `${lead.notes.slice(0,100)}...` : `${lead.notes}`}</div>
               <div className="text-xs text-gray-500">
                 {new Date(lead.created_at).toLocaleString()}
               </div>
