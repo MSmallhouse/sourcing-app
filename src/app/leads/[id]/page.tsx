@@ -115,8 +115,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     setEditImageFile(null);
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading || isAdmin === undefined) return <div className="p-8">Loading...</div>;
   if (!lead) return <div className="p-8">Lead not found.</div>;
+
+  console.log('isAdmin:', isAdmin);
+  console.log('lead.status:', lead.status);
 
   return (
     <div className="p-8 max-w-lg mx-auto">
@@ -301,23 +304,25 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           </>
         ) : (
           <div className="flex space-x-2 mt-2 mb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditing(true);
-                setEditValues({
-                  ...lead,
-                  purchase_price: lead.purchase_price?.toString() ?? '',
-                });
-              }}
-            >
-              Edit
-            </Button>
-            {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
-              <DeleteLeadButton lead={lead} />
+            {(isAdmin || !isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditValues({
+                    ...lead,
+                    purchase_price: lead.purchase_price?.toString() ?? '',
+                  });
+                }}
+              >
+                Edit
+              </Button>
             )}
           </div>
         )}
+        {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) ? (
+          <DeleteLeadButton lead={lead} />
+        ) : null}
         <Button
           variant="outline"
           onClick={() => router.back()}
