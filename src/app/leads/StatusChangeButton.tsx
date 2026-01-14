@@ -22,6 +22,7 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
   const [salePrice, setSalePrice] = useState<string>(lead.sale_price?.toString() || '');
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionNotes, setRejectionNotes] = useState('');
+  const [purchasePrice, setPurchasePrice] = useState<string>(lead.purchase_price?.toString() || '');
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (!lead) return;
@@ -37,6 +38,12 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
     // Render the rejected dialogue
     if (newStatus === 'rejected' ) {
       setPendingStatus('rejected');
+      return;
+    }
+
+    // Render the confirm puchase price dialogue
+    if (newStatus === 'picked up') {
+      setPendingStatus('picked up');
       return;
     }
 
@@ -56,6 +63,26 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
     const freshLead = await updateLeadsTableAndCalendar({ lead, updatedData })
     if (setLead && freshLead) setLead(freshLead);
   }
+
+  const handleConfirmPickedUp = async () => {
+    if (!purchasePrice) {
+      alert('Please enter the purchase price.');
+      return;
+    }
+
+    const freshLead = await updateLeadsTableAndCalendar({
+      lead,
+      updatedData: {
+        status: 'picked up',
+        purchase_price: parseFloat(purchasePrice),
+      },
+    });
+
+    if (setLead && freshLead) setLead(freshLead);
+
+    setPendingStatus(null);
+    setPurchasePrice('');
+  };
 
   const handleConfirmRejected = async() => {
     if (!rejectionReason) {
@@ -174,6 +201,33 @@ export function StatusChangeButton( { lead, setLead }: StatusChangeButtonProps) 
               onClick={handleConfirmSold}
             >
               Confirm Sold
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setPendingStatus(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : pendingStatus === 'picked up' ? (
+        <div className="flex flex-col space-y-2">
+          <label>
+            Purchase Price:
+            <input
+              type="number"
+              className="border p-1 ml-2"
+              value={purchasePrice}
+              onChange={(e) => setPurchasePrice(e.target.value)}
+              required
+            />
+          </label>
+          <div className="flex space-x-2 mt-2">
+            <Button
+              variant="outline"
+              onClick={handleConfirmPickedUp}
+            >
+              Confirm Pickup Price
             </Button>
             <Button
               variant="secondary"
