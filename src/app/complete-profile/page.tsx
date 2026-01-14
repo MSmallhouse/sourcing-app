@@ -78,7 +78,10 @@ export default function CompleteProfile() {
           </CardHeader>
           <CardContent>
             <p>Your information was successfully updated.</p>
-            <Button asChild className="mt-4">
+            <Button className="mt-4 w-full">
+              <Link href="/faqs">Read The Manual</Link>
+            </Button>
+            <Button className="mt-4 w-full">
               <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
           </CardContent>
