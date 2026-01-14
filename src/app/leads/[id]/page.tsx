@@ -123,9 +123,6 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   if (loading || isAdmin === undefined) return <div className="p-8">Loading...</div>;
   if (!lead) return <div className="p-8">Lead not found.</div>;
 
-  console.log('isAdmin:', isAdmin);
-  console.log('lead.status:', lead.status);
-
   return (
     <div className="p-8 max-w-lg mx-auto">
       <div className="w-full aspect-square overflow-hidden flex mb-6 relative">
