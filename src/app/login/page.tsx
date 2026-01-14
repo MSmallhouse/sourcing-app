@@ -95,6 +95,7 @@ export default function LoginPage() {
             </ul>
             <p>Read Our <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800">FAQs</Link> for more information.</p>
             <p>Visit <Link href="https://instantofferfurniture.com/" target="_blank" className="underline text-blue-600 hover:text-blue-800">Instant Offer Furniture</Link> for more about the company.</p>
+            <p><Link href="mailto:instantofferfurniture@gmail.com" className="underline text-blue-600 hover:text-blue-800">Contact Us</Link> with any questions by email at instantofferfurniture@gmail.com</p>
           </CardContent>
         </Card>
       </div>
