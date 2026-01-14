@@ -26,7 +26,7 @@ export default function AuthCallback() {
       if (!profile?.first_name || !profile?.last_name) {
         router.replace('/complete-profile')
       } else {
-        router.replace('/dashboard')
+        router.replace('/faqs')
       }
     }
 
