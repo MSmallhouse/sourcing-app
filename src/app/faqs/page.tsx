@@ -1,10 +1,32 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
+import Link from 'next/link'
 
 export default function Faq() {
+  const [openItem, setOpenItem] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Remove the '#' from the hash
+    // this is needed to scroll smoothly, otherwise the window just immediately loads at the # anchor tag
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      // Reset scroll to the top of the page
+      window.scrollTo({ top: 0, behavior: "auto" });
+
+      setTimeout(() => {
+        setOpenItem(hash);
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" }); // Smoothly scroll to the element
+        }
+      }, 100);
+    }
+  }, []);
+
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Instant Offer Furniture — Sourcing Manual</h1>
@@ -31,7 +53,8 @@ export default function Faq() {
         <CardContent>
           <ol className="list-decimal list-inside space-y-2">
             <li className="mb-8">
-              <strong>Submit a Lead:</strong> Use the “Submit a Lead” form and provide as much detail as possible:
+              <strong>Submit a Lead:</strong> Use the <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800">Submit a Lead</Link> form and provide as much detail as possible:
+
               <ul className="list-disc list-inside ml-6 space-y-2 mt-2">
                 <li>Identify the brand</li>
                 <li>Find the original retail price</li>
@@ -86,7 +109,7 @@ export default function Faq() {
         </CardContent>
       </Card>
 
-      <Accordion type="single" collapsible>
+      <Accordion type="single" collapsible value={openItem ?? ''} onValueChange={setOpenItem}>
         <AccordionItem value="seller-messaging">
           <AccordionTrigger>Seller Messaging Script</AccordionTrigger>
           <AccordionContent>
@@ -119,7 +142,7 @@ export default function Faq() {
             <p>Instant cash-out directly to your bank</p>
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="stripe-onboarding">
+        <AccordionItem value="stripe-onboarding" id="stripe-onboarding">
           <AccordionTrigger>Stripe Onboarding Steps</AccordionTrigger>
           <AccordionContent>
             <ol className="list-decimal list-inside space-y-2">

@@ -193,6 +193,13 @@ export default function AccountPage() {
                 stripeOnboardStatus == 'complete' ? 'Update Banking Info' : 'Connect Bank Account'}
             </Link>
           </Button>
+          {stripeOnboardStatus !== 'complete' && (
+            <Button
+              className="mt-4 block"
+            >
+              <Link href="/faqs#stripe-onboarding">Banking Help/Info</Link>
+            </Button>
+          )}
           {unpaidCommission > 0 && stripeOnboardStatus && (
             <Button
               onClick={handleRequestPayout}

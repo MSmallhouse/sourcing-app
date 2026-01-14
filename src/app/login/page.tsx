@@ -93,8 +93,8 @@ export default function LoginPage() {
               <li>Negotiate a purchase price and set up pickup details with the seller.</li>
               <li>Earn 20% commission when the piece sells from the Instant Offer Furniture storefront!</li>
             </ul>
-            <p>Read Our <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">FAQs</Link> for more information.</p>
-            <p>Visit <Link href="https://instantofferfurniture.com/" target="_blank" className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Instant Offer Furniture</Link> for more about the company.</p>
+            <p>Read Our <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800">FAQs</Link> for more information.</p>
+            <p>Visit <Link href="https://instantofferfurniture.com/" target="_blank" className="underline text-blue-600 hover:text-blue-800">Instant Offer Furniture</Link> for more about the company.</p>
           </CardContent>
         </Card>
       </div>
