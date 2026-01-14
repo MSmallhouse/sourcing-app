@@ -18,7 +18,7 @@ export default function footer() {
         </div>
         <div className="text-center mb-12 md:mb-0">
           <p><Link href="mailto:instantofferfurniture@gmail.com" className="underline text-white hover:text-gray-400 transition-colors">instantofferfurniture@gmail.com</Link></p>
-          <p><Link href="sms:+17208031211" className="underline text-white hover:text-gray-400 transition-colors">(720)803-1211</Link></p>
+          <p>Text Help Line:&nbsp;&nbsp;<Link href="sms:+17205419963" className="underline text-white hover:text-gray-400 transition-colors">(720)541-9963</Link></p>
           <div className="flex justify-center">
             <Link href="https://www.linkedin.com/company/instant-offer-furniture/" target="_blank">
               <FaLinkedin className="h-5 w-5 me-2 text-white hover:text-gray-400 transition-colors" />
