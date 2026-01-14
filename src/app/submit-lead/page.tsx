@@ -132,6 +132,7 @@ export default function SubmitLeadPage() {
       .eq('id', lead.id);
     }
 
+console.log('CC Emails:', process.env.NEXT_PUBLIC_CC_EMAILS?.split(',').map(email => email.trim()))
     // Send email notification to the admin
     try {
       const response = await fetch('/api/send-email', {
@@ -139,6 +140,9 @@ export default function SubmitLeadPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: process.env.NEXT_PUBLIC_ADMIN_NOTIFICATIONS_EMAIL,
+          cc: process.env.NEXT_PUBLIC_CC_EMAILS
+            ? process.env.NEXT_PUBLIC_CC_EMAILS.split(',').map(email => email.trim())
+            : [],
           subject: 'New Lead Submitted',
           html: `
             <h1>New Lead Submitted</h1>
