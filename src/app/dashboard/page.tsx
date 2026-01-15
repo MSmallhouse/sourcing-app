@@ -34,7 +34,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xl font-bold">No Submissions Yet</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Set your location to Denver, and start hunting for deals on Facebook Marketplace, OfferUp, Craigslist, or anywhere else you can find used sofas and sectionals!</p>
+            <p>Set your location to Denver and start hunting for deals on Facebook Marketplace, OfferUp, Craigslist, or anywhere else you can find used sofas and sectionals!</p>
             <p>See <Link href="/flips" className="underline text-blue-600 hover:text-blue-800">successful flips</Link> from other users for inspiration!</p>
             <p>Read our <Link href="/faqs/#seller-messaging" className="underline text-blue-600 hover:text-blue-800">Seller Messaging Script</Link>.</p>
             <p>Submit your first lead <Link href="/submit-lead" className="underline text-blue-600 hover:text-blue-800">here</Link>.</p>
