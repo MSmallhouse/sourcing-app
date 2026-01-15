@@ -59,7 +59,7 @@ export default function DashboardPage() {
           ) : filterLeadsByStatus(status).length === 0 ? (
             <p>None</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {filterLeadsByStatus(status).map((lead) => (
                 <LeadCard lead={lead} key={lead.id} />
               ))}
