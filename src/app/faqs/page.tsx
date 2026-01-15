@@ -53,8 +53,14 @@ export default function Faq() {
         <CardContent>
           <ol className="list-decimal list-inside space-y-2">
             <li className="mb-8">
+              <strong>Find Local Deals:</strong> Set your location to Denver and look for sofas and sectionals on Facebook Marketplace, OfferUp, Craigslist, etc.
+              <ul className="list-disc list-inside ml-6 space-y-2 mt-2">
+                <li>Message the seller <Link href="#seller-messaging" className="underline text-blue-600 hover:text-blue-800">sample script</Link></li>
+                <li>Arrange a time for pickup (check the Submit a Lead page for our pickup availability)</li>
+              </ul>
+            </li>
+            <li className="mb-8">
               <strong>Submit a Lead:</strong> Use the <Link href="/faqs" target="_blank" className="underline text-blue-600 hover:text-blue-800">Submit a Lead</Link> form and provide as much detail as possible:
-
               <ul className="list-disc list-inside ml-6 space-y-2 mt-2">
                 <li>Identify the brand</li>
                 <li>Find the original retail price</li>
