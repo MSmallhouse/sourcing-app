@@ -1,5 +1,6 @@
 'use client'
-import { LeadCard } from './LeadCard';
+
+import { LeadCard } from '@/components/LeadCard';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useLeads } from '@/hooks/useLeads';
 import type { LeadStatus } from '@/types/leads';
