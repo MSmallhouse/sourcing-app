@@ -29,6 +29,9 @@ export default function Navbar() {
         <Link href="/submit-lead" className="hover:underline">
           Submit a Lead
         </Link>
+        <Link href="/flips" className="hover:underline">
+          Past Successes
+        </Link>
         <Link href="/faqs" className="hover:underline">
           FAQs
         </Link>
