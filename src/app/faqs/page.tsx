@@ -110,7 +110,7 @@ export default function Faq() {
       </Card>
 
       <Accordion type="single" collapsible value={openItem ?? ''} onValueChange={setOpenItem}>
-        <AccordionItem value="seller-messaging">
+        <AccordionItem value="seller-messaging" id="seller-messaging">
           <AccordionTrigger>Seller Messaging Script</AccordionTrigger>
           <AccordionContent>
             <p>Follow this structure for your conversations:</p>
