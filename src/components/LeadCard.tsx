@@ -4,11 +4,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { type Lead } from '@/types/leads';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { SOURCER_COMMISSION_RATE } from "@/config/constants";
 
 export function LeadCard({ lead }: { lead: Lead }) {
   return (
     <Link href={`/leads/${lead.id}`} className="block">
       <Card className="hover:shadow-md hover:border-gray-300 transition-all duration-400 border p-4 rounded-lg cursor-pointer">
+        {lead.status === 'sold' && (
+          <div className='text-green-700'>
+            Sourcer Commission:
+            <span className='font-semibold'>
+              {(lead.sale_price && lead.purchase_price) ?
+                ` $${((lead.sale_price - lead.purchase_price) * SOURCER_COMMISSION_RATE).toFixed(2)}` :
+              ' N/A'}
+            </span>
+          </div>
+        )}
         <div className="flex flex-row gap-4">
           {/* Image Section */}
           <div className="w-[100px] h-[100px] overflow-hidden flex items-center justify-center relative">
@@ -30,9 +41,11 @@ export function LeadCard({ lead }: { lead: Lead }) {
             </CardHeader>
             <CardContent className="p-0 mt-2 space-y-1">
               <div className="text-sm">Price: ${lead.purchase_price}</div>
-              <div className="text-sm">Notes: {lead.notes?.length > 100 ? `${lead.notes.slice(0,100)}...` : `${lead.notes}`}</div>
+              {lead.notes && (
+                <div className="text-sm">Notes: {lead.notes?.length > 100 ? `${lead.notes.slice(0,100)}...` : `${lead.notes}`}</div>
+              )}
               <div className="text-xs text-gray-500">
-                {new Date(lead.created_at).toLocaleString()}
+                Submitted: {new Date(lead.created_at).toLocaleDateString()}
               </div>
 
               {/* Sale Info */}
