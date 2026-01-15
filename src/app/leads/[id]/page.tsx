@@ -33,6 +33,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const { id } = React.use(params);
 
+  function isLeadOwner(lead: Lead) {
+    return lead.sourcer_id == userId
+  }
+
   // grab the lead as well as profile info attached to who submitted it
   useEffect(() => {
     async function fetchLead() {
@@ -273,9 +277,13 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
         </>
       )}
-      <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
-      <p><span className="font-bold">Sourcer Name:</span> {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
-      {lead.rejection_reason && (
+      {isAdmin || isLeadOwner(lead) && (
+        <>
+          <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
+          <p><span className="font-bold">Sourcer Name:</span> {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
+        </>
+      )}
+     {lead.rejection_reason && (
         <p><span className="font-bold">Reason for Rejection:</span> {lead.rejection_reason}</p>
       )}
       {lead.sale_date && (
@@ -314,7 +322,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               >
                 Back
               </Button>
-              {(isAdmin || !isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) && (
+              {( isAdmin || ( isLeadOwner(lead) && (lead.status === 'submitted' || lead.status === 'approved')) ) && (
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -329,7 +337,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 </Button>
               )}
             </div>
-            {(isAdmin && lead.status !== 'sold') || (!isAdmin && (lead.status === 'submitted' || lead.status === 'approved')) ? (
+            {(isAdmin && lead.status !== 'sold') || (isLeadOwner(lead) && (lead.status === 'submitted' || lead.status === 'approved')) ? (
               <DeleteLeadButton lead={lead} />
             ) : null}
           </>
