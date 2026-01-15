@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
@@ -8,24 +9,29 @@ import Link from 'next/link'
 
 export default function Faq() {
   const [openItem, setOpenItem] = useState<string | null>(null);
+  const pathname = usePathname();
 
-  useEffect(() => {
+  function scrollAndOpenAccordion(hash = '') {
     // Remove the '#' from the hash
     // this is needed to scroll smoothly, otherwise the window just immediately loads at the # anchor tag
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-      // Reset scroll to the top of the page
-      window.scrollTo({ top: 0, behavior: "auto" });
+    if (!hash) hash = window.location.hash.substring(1);
+    if (!hash) return;
 
-      setTimeout(() => {
-        setOpenItem(hash);
-        const element = document.getElementById(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" }); // Smoothly scroll to the element
-        }
-      }, 100);
-    }
-  }, []);
+    // Reset scroll to the top of the page
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    setTimeout(() => {
+      setOpenItem(hash);
+      const element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" }); // Smoothly scroll to the element
+      }
+    }, 100);
+  }
+
+  useEffect(() => {
+    scrollAndOpenAccordion();
+  }, [pathname]);
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -55,7 +61,18 @@ export default function Faq() {
             <li className="mb-8">
               <strong>Find Local Deals:</strong> Set your location to Denver and look for sofas and sectionals on Facebook Marketplace, OfferUp, Craigslist, etc.
               <ul className="list-disc list-inside ml-6 space-y-2 mt-2">
-                <li>Message the seller <Link href="#seller-messaging" className="underline text-blue-600 hover:text-blue-800">sample script</Link></li>
+                <li>Message the seller{" "}
+                  <Link
+                    href="/faqs/#seller-messaging"
+                    className="underline text-blue-600 hover:text-blue-800"
+                    onClick={(e) => {
+                    e.preventDefault(); // Prevent default link behavior
+                    scrollAndOpenAccordion('seller-messaging'); // Call the helper function with the custom hash
+                    }}
+                  >
+                    sample script
+                  </Link>
+                </li>
                 <li>Arrange a time for pickup (check the Submit a Lead page for our pickup availability)</li>
               </ul>
             </li>
