@@ -277,12 +277,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
         </>
       )}
-      {isAdmin || isLeadOwner(lead) && (
+      {isAdmin || isLeadOwner(lead) ? (
         <>
           <p><span className="font-bold">Sourcer Email:</span> {lead.profiles?.email ?? 'Unknown'}</p>
           <p><span className="font-bold">Sourcer Name:</span> {lead.profiles?.first_name ?? 'Unknown'} {lead.profiles?.last_name ?? ''}</p>
         </>
-      )}
+      ) : null }
      {lead.rejection_reason && (
         <p><span className="font-bold">Reason for Rejection:</span> {lead.rejection_reason}</p>
       )}
