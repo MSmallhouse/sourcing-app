@@ -7,6 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 
 type Slot = { start: string; end: string };
 
@@ -16,11 +19,18 @@ type PickupTimeSelectProps = {
   lead?: Lead;
 };
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 function formatSlotLabel(startStr: string, endStr: string) {
-  const start = new Date(startStr);
-  const end = new Date(endStr);
-  const day = start.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-  const time = `${start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  const TIMEZONE = 'America/Denver';
+
+  const start = dayjs.utc(startStr).tz(TIMEZONE); // Parse as UTC and convert to Mountain Time
+  const end = dayjs.utc(endStr).tz(TIMEZONE); // Parse as UTC and convert to Mountain Time
+
+  const day = start.format('dddd, MMM D');
+  const time = `${start.format('h:mm A')} – ${end.format('h:mm A')} MT`;
+
   return `${day}, ${time}`.trim();
 }
 

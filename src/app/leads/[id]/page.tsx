@@ -20,6 +20,8 @@ type LeadEditValues = Partial<Omit<Lead, 'purchase_price' >>
     purchase_price?: string;
   };
 
+const TIMEZONE = process.env.NEXT_PUBLIC_TIMEZONE;
+
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [lead, setLead] = useState<LeadWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -273,8 +275,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         />
       ) : (
         <>
-          <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start)}</p>
-          <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end)}</p>
+          <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start, 'America/Denver')} MT</p>
+          <p><span className="font-bold">Pickup End:</span> {formatDatestring(lead.pickup_end, 'America/Denver')} MT</p>
         </>
       )}
       {isAdmin || isLeadOwner(lead) ? (
