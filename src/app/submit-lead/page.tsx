@@ -102,84 +102,91 @@ export default function SubmitLeadPage() {
     }
   
     // Insert the lead into Supabase
-    const [startISO, endISO] = pickupTime.split('|');
-    const { data: lead, error } = await supabase
-      .from('leads')
-      .insert({
-        sourcer_id: userId,
-        title,
-        purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
-        address,
-        phone,
-        notes,
-        pickup_start: startISO,
-        pickup_end: endISO,
-        status: 'submitted',
-      })
-      .select()
-      .single();
-  
-    if (error) {
-      console.error('Error inserting lead:', error);
-      return;
-    }
-
-    // Upload image
-    let imageUrl = null;
-    if (image) {
-      imageUrl = await uploadLeadImage(image, lead.id);
-      await supabase
-      .from('leads')
-      .update({ image_url: imageUrl })
-      .eq('id', lead.id);
-    }
-
-console.log('CC Emails:', process.env.NEXT_PUBLIC_CC_EMAILS?.split(',').map(email => email.trim()))
-    // Send email notification to the admin
+    setLoading(true);
     try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: process.env.NEXT_PUBLIC_ADMIN_NOTIFICATIONS_EMAIL,
-          cc: process.env.NEXT_PUBLIC_CC_EMAILS
-            ? process.env.NEXT_PUBLIC_CC_EMAILS.split(',').map(email => email.trim())
-            : [],
-          subject: 'New Lead Submitted',
-          html: `
-            <h1>New Lead Submitted</h1>
-            <p><strong>Title:</strong> ${title}</p>
-            <p><strong>Condition:</strong> ${condition}</p>
-            <p><strong>Purchase Price:</strong> $${purchasePrice}</p>
-            <p><strong>Retail Price:</strong> $${retailPrice}</p>
-            <p><strong>Notes:</strong> ${notes}</p>
-            ${
-              imageUrl
-                ? `<p><strong>Image:</strong></p><img src="${imageUrl}" alt="Lead Image" style="max-width: 100%; height: auto;" />`
-                : '<p><strong>Image:</strong> No image uploaded.</p>'
-            }
-          `,
-        }),
-      });
-    } catch (emailError) {
-      console.error('Failed to send email notification:', emailError);
-    }
+      const [startISO, endISO] = pickupTime.split('|');
+      const { data: lead, error } = await supabase
+        .from('leads')
+        .insert({
+          sourcer_id: userId,
+          title,
+          purchase_price: purchasePrice === '' ? 0 : Number(purchasePrice),
+          address,
+          phone,
+          notes,
+          pickup_start: startISO,
+          pickup_end: endISO,
+          status: 'submitted',
+        })
+        .select()
+        .single();
+  
+      if (error) {
+        console.error('Error inserting lead:', error);
+        return;
+      }
 
-    // Clear the form fields
-    setTitle('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setImage(null);
-    setPurchasePrice('');
-    setretailPrice('');
-    setCondition('');
-    setAddress('');
-    setPhone('');
-    setNotes('');
-    setPickupTime('');
+      // Upload image
+      let imageUrl = null;
+      if (image) {
+        imageUrl = await uploadLeadImage(image, lead.id);
+        await supabase
+        .from('leads')
+        .update({ image_url: imageUrl })
+        .eq('id', lead.id);
+      }
 
-    router.push('/dashboard');
+      // Send email notification to the admin
+      try {
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: process.env.NEXT_PUBLIC_ADMIN_NOTIFICATIONS_EMAIL,
+            cc: process.env.NEXT_PUBLIC_CC_EMAILS
+              ? process.env.NEXT_PUBLIC_CC_EMAILS.split(',').map(email => email.trim())
+              : [],
+            subject: 'New Lead Submitted',
+            html: `
+              <h1>New Lead Submitted</h1>
+              <p><strong>Title:</strong> ${title}</p>
+              <p><strong>Condition:</strong> ${condition}</p>
+              <p><strong>Purchase Price:</strong> $${purchasePrice}</p>
+              <p><strong>Retail Price:</strong> $${retailPrice}</p>
+              <p><strong>Notes:</strong> ${notes}</p>
+              ${
+                imageUrl
+                  ? `<p><strong>Image:</strong></p><img src="${imageUrl}" alt="Lead Image" style="max-width: 100%; height: auto;" />`
+                  : '<p><strong>Image:</strong> No image uploaded.</p>'
+              }
+            `,
+          }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send email notification:', emailError);
+      }
+
+      // Clear the form fields
+      setTitle('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      setImage(null);
+      setPurchasePrice('');
+      setretailPrice('');
+      setCondition('');
+      setAddress('');
+      setPhone('');
+      setNotes('');
+      setPickupTime('');
+
+      router.push('/dashboard');
+
+    } catch (err) {
+      console.error('Error during lead submission:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -330,11 +337,15 @@ console.log('CC Emails:', process.env.NEXT_PUBLIC_CC_EMAILS?.split(',').map(emai
         <Button
           variant="outline"
           type="submit"
-          disabled={loading}
+          disabled={loading} // Disable the button while loading
         >
           {step === 'review'
-            ? loading ? 'Reviewing...' : 'Submit for Quote Review'
-            : 'Submit Lead'}
+            ? loading
+              ? 'Reviewing...' // Show "Reviewing..." while in the review step
+              : 'Submit for Quote Review'
+            : loading
+              ? 'Submitting...' // Show "Submitting..." while submitting the lead
+              : 'Submit Lead'}
         </Button>
       </form>
     </div>
