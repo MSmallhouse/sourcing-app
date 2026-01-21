@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { HoverPopover } from '@/components/HoverPopover';
+import { Info } from 'lucide-react';
 
 const CONDITION_OPTIONS = ['Like New', 'Good', 'Fair'];
 
@@ -297,10 +299,24 @@ console.log('CC Emails:', process.env.NEXT_PUBLIC_CC_EMAILS?.split(',').map(emai
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-          <PickupTimeSelect
-            value={pickupTime}
-            onChange={setPickupTime}
-          />
+          <div className="flex gap-2">
+            <PickupTimeSelect
+              value={pickupTime}
+              onChange={setPickupTime}
+            />
+            <div className="flex">
+              <HoverPopover
+                trigger={
+                  <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                }
+                content={
+                  <p className="text-sm">
+                    The times displayed are in local Denver time (Mountain Time).
+                  </p>
+                }
+              />
+            </div>
+          </div>
         </div>
         {step === 'submit' && (
           <Button

@@ -14,6 +14,8 @@ import { formatDatestring } from '@/lib/formatDatestring'
 import { PickupTimeSelect } from '@/components/PickupTimeSelect';
 import { StatusChangeButton } from '../StatusChangeButton';
 import { Button } from "@/components/ui/button"
+import { HoverPopover } from '@/components/HoverPopover';
+import { Info } from 'lucide-react';
 
 type LeadEditValues = Partial<Omit<Lead, 'purchase_price' >>
   & {
@@ -257,22 +259,36 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       </p>
 
       {isEditing ? (
-        <PickupTimeSelect
-          value={
-            editValues.pickup_start && editValues.pickup_end
-              ? `${editValues.pickup_start}|${editValues.pickup_end}`
-              : `${lead.pickup_start}|${lead.pickup_end}`
-          }
-          onChange={val => {
-            const [start, end] = val.split('|');
-            setEditValues(prev => ({
-              ...prev,
-              pickup_start: start,
-              pickup_end: end,
-            }));
-          }}
-          lead={lead}
-        />
+        <div className="flex gap-2">
+          <PickupTimeSelect
+            value={
+              editValues.pickup_start && editValues.pickup_end
+                ? `${editValues.pickup_start}|${editValues.pickup_end}`
+                : `${lead.pickup_start}|${lead.pickup_end}`
+            }
+            onChange={val => {
+              const [start, end] = val.split('|');
+              setEditValues(prev => ({
+                ...prev,
+                pickup_start: start,
+                pickup_end: end,
+              }));
+            }}
+            lead={lead}
+          />
+          <div className="flex">
+          <HoverPopover
+            trigger={
+              <Info className="w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+            }
+            content={
+              <p className="text-sm">
+                The times displayed are in local Denver time (Mountain Time).
+              </p>
+            }
+          />
+                </div>
+        </div>
       ) : (
         <>
           <p><span className="font-bold">Pickup Start:</span> {formatDatestring(lead.pickup_start, 'America/Denver')} MT</p>
