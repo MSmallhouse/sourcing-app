@@ -17,12 +17,12 @@ type StatusSectionProps = {
 export function StatusSection({ statuses, loading, filterLeadsByStatus, layout }: StatusSectionProps) {
   return (
     <div
-      className={layout === 'horizontal' ? 'flex md:flex-row md:gap-8 whitespace-nowrap' : 'space-y-8'}
+      className={layout === 'horizontal' ? 'flex md:flex-row md:gap-8' : 'space-y-8'}
     >
       {statuses.map(({ status, description }) => (
         <div
           key={status}
-          className={layout === 'horizontal' ? 'flex-shrink-0 w-80' : ''}
+          className={layout === 'horizontal' ? 'flex-shrink-0 w-[38vw]' : ''}
         >
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold mb-2 pt-8">
