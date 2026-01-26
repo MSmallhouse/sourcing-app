@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       amount: Math.round(totalCommission * 100),
       currency: 'usd',
       destination: profile.stripe_account_id,
-      description: 'Sourcer commission payout',
+      description: isDev ? 'Developer commission payout' : 'Sourcer commission payout',
     });
   } catch (stripeError) {
     console.error("Stripe transfer error:", stripeError)
